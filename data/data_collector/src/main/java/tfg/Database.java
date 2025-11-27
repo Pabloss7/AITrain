@@ -1,27 +1,28 @@
 package tfg;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+
 import java.sql.*;
 
 public class Database {
 
-    private final Connection connection;
+    private final MongoClient client;
+    private  final MongoDatabase database;
+    private  final MongoCollection<Document> responses;
 
-    public Database(String uri) throws  Exception {
-        connection = DriverManager.getConnection(uri);
-        createTable();
-    }
-
-    private void createTable() throws SQLException {
-        String sql = "CREATE TABLE IF NOT EXISTS responses (id INTEGER PRIMARY KEY AUTOINCREMENT, json TEXT)";
-        Statement stmt = connection.createStatement();
-        stmt.execute(sql);
+    public Database(String uri, String dbName) throws  Exception {
+        client = MongoClients.create(uri);
+        database = client.getDatabase(dbName);
+        responses = database.getCollection("responses");
     }
 
     public void insertResponse(String json) throws SQLException {
-        String sql = "INSERT INTO responses (json) VALUES (?)";
-        PreparedStatement stmt = connection.prepareStatement(sql);
-        stmt.setString(1, json);
-        stmt.executeUpdate();
+       Document doc = new Document("json", json);
+       responses.insertOne(doc);
     }
 
 }

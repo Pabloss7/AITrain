@@ -13,10 +13,14 @@ public class Main {
             String apikey = dotenv.get("RIOT_API_KEY");
             String accountURI = dotenv.get("RIOT_ACCOUNT_URL");
             String matchesURI = dotenv.get("RIOT_MATCHES_URL");
-
+            String MONGO_URI = dotenv.get("MONGO_URI");
+            String MONGO_DB = dotenv.get("MONGO_DB");
 
             RiotApiClient client = new RiotApiClient(apikey);
-            Database db = new Database("jdbc:sqlite:db");
+            Database db = new Database(
+                    MONGO_URI,
+                    MONGO_DB
+            );
 
             String summonerName = "xxkattaa";
             String tagLine = "KOI";
@@ -26,6 +30,8 @@ public class Main {
             );
 
             System.out.println(summonerJSON);
+
+            db.insertResponse(summonerJSON);
 
         } catch (Exception e) {
             e.printStackTrace();
