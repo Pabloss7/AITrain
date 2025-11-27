@@ -2,6 +2,8 @@ package tfg;
 
 
 import io.github.cdimascio.dotenv.Dotenv;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class Main {
     public static void main(String[] args) {
@@ -16,22 +18,25 @@ public class Main {
             String MONGO_URI = dotenv.get("MONGO_URI");
             String MONGO_DB = dotenv.get("MONGO_DB");
 
-            RiotApiClient client = new RiotApiClient(apikey);
+
             Database db = new Database(
                     MONGO_URI,
                     MONGO_DB
             );
-
+            RiotApiClient client = new RiotApiClient(apikey, db);
             String summonerName = "xxkattaa";
             String tagLine = "KOI";
 
-            String summonerJSON = client.get(
+            String summonerJSON = client.getAccount(
                     accountURI + summonerName + "/" + tagLine
             );
 
-            System.out.println(summonerJSON);
+            JsonObject obj = JsonParser.parseString(summonerJSON).getAsJsonObject();
+            String puuid = obj.get("puuid").getAsString();
 
-            db.insertResponse(summonerJSON);
+
+            client.startCollectionOfData(puuid,matchesURI);
+
 
         } catch (Exception e) {
             e.printStackTrace();
