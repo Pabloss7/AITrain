@@ -5,11 +5,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.bson.Document;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.*;
 
 public class RiotApiClient {
 
@@ -44,56 +46,77 @@ public class RiotApiClient {
     }
 
     public void startCollectionOfData(String playerPUUID, String Url) throws Exception {
-        // OBTAIN THE MATCHES IDS FROM THE ENTRY PLAYER ACCOUNT
-        String completeUrl = Url+"by-puuid/"+playerPUUID+"/ids?type=ranked&start=0&count=2";
-        URL url = new URL(completeUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        int maxMatches = 5000;
+        int totalMatches = 0;
+        Queue<String> playersQueue = new LinkedList<>();
+        Set<String> playersSet = new HashSet<>();
 
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("X-Riot-Token", this.apiKey);
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String inputLine;
-
-        StringBuilder content = new StringBuilder();
-        while ((inputLine = br.readLine()) != null) {
-            content.append(inputLine);
-        }
-
-        br.close();
-        connection.disconnect();
-
-        Gson gson = new Gson();
-        String [] matchIds = gson.fromJson(content.toString(), String[].class);
+        playersQueue.add(playerPUUID);
 
         Dotenv dotenv = Dotenv.load();
         String matchesURI = dotenv.get("RIOT_MATCHES_URL");
 
-        for(String matchId : matchIds){
-            getMatch(matchId,matchesURI);
-        }
+        while (!playersQueue.isEmpty() && totalMatches < maxMatches) {
+            String currentPlayerPUUID = playersQueue.poll();
+            System.out.println("Fetching player:"+currentPlayerPUUID);
 
-        for (String puuid : PUUIDS) {
-            System.out.println(puuid);
+            if(playersSet.contains(currentPlayerPUUID)) continue;
+
+            // OBTAIN THE MATCHES IDS FROM THE ENTRY PLAYER ACCOUNT
+            String completeUrl = Url+"by-puuid/"+currentPlayerPUUID+"/ids?type=ranked&start=0&count=10";
+            URL url = new URL(completeUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("X-Riot-Token", this.apiKey);
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+
+            StringBuilder content = new StringBuilder();
+            while ((inputLine = br.readLine()) != null) {
+                content.append(inputLine);
+            }
+            br.close();
+            connection.disconnect();
+
+            Gson gson = new Gson();
+            String [] matchIds = gson.fromJson(content.toString(), String[].class);
+            System.out.println("Fetched "+matchIds.length+" matches");
+
+            for(String matchId : matchIds){
+                if(totalMatches >= maxMatches) break;
+
+                Document doc = getMatch(matchId,matchesURI);
+
+                db.insertResponse(doc);
+                System.out.println("Inserted match");
+                totalMatches++;
+
+                // Forcing delay so we have rate limits of 100 calls every 2 min,
+                // so won't be banned from riot
+                Thread.sleep(1200);
+
+                String [] participantsPUUIDS = getPuuids(doc);
+
+                for( String PUUID : participantsPUUIDS){
+                   if(!playersSet.contains(PUUID)) playersQueue.add(PUUID);
+                   System.out.println("Inserted player:"+PUUID);
+                }
+            }
+            playersSet.add(currentPlayerPUUID);
         }
     }
 
-    public String [] getPuuids(StringBuilder content) throws Exception {
-
-        JsonObject obj = JsonParser.parseString(content.toString()).getAsJsonObject();
-        JsonArray puuids = obj.getAsJsonObject("metadata").getAsJsonArray("participants");
-
-        String [] puuidIds = new String[puuids.size()];
-        for (int i = 0; i < puuids.size(); i++) {
-            puuidIds[i] = puuids.get(i).getAsString();
-        }
-
-        return puuidIds;
+    public String [] getPuuids(Document content) throws Exception {
+        Document metadata = (Document) content.get("metadata");
+        List<String> participants = (List<String>) metadata.get("participants");
+        return participants.toArray(new String[0]);
     }
 
-    public void getMatch(String matchId, String Url) throws Exception {
+    public Document getMatch(String matchId, String Url) throws Exception {
         String completeUrl = Url+matchId;
         URL url = new URL(completeUrl);
+
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("X-Riot-Token", this.apiKey);
@@ -107,11 +130,7 @@ public class RiotApiClient {
         }
         br.close();
         connection.disconnect();
-
-        if(firstIteration){
-            PUUIDS = getPuuids(content);
-            firstIteration = false;
-        }
-        db.insertResponse(content.toString());
+        System.out.println("Match with id:"+matchId+" found");
+        return Document.parse(content.toString());
     }
 }

@@ -1,5 +1,6 @@
 package tfg;
 
+import com.google.gson.JsonObject;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -20,7 +21,7 @@ public class Database {
         responses = database.getCollection("responses");
     }
 
-    public void insertResponse(String json) throws SQLException {
+    public void insertResponse(Document json) throws SQLException {
        Document doc = new Document("json", json);
        responses.insertOne(doc);
     }
