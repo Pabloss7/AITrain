@@ -46,7 +46,7 @@ public class RiotApiClient {
     }
 
     public void startCollectionOfData(String playerPUUID, String Url) throws Exception {
-        int maxMatches = 5000;
+        int maxMatches = 10000;
         int totalMatches = 0;
         Queue<String> playersQueue = new LinkedList<>();
         Set<String> playersSet = new HashSet<>();
