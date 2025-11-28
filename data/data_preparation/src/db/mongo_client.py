@@ -12,4 +12,7 @@ def get_mongo_collection():
         client = MongoClient(uri)
         db = client[db_name]
         collection = db[collection_name]
+        
+        count = collection.count_documents({})
+        print("Documentos en la colección:",count)
         return collection

@@ -1,8 +1,8 @@
 def extract_metrics(match_doc):
-    participants = match_doc["info"]["participants"]
+    participants = match_doc["json"]["info"]["participants"]
     
     return{
-        "gameDuration": match_doc["info"]["gameDuration"],
+        "gameDuration": match_doc["json"]["info"]["gameDuration"],
         "championName": [p["championName"] for p in participants],
         "individualPosition": [p["individualPosition"]for p in participants],
         "kills": [p["kills"] for p in participants],
