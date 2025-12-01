@@ -1,19 +1,23 @@
 def extract_metrics(match_doc):
+    rows = []
     participants = match_doc["json"]["info"]["participants"]
-    
-    return{
-        "gameDuration": match_doc["json"]["info"]["gameDuration"],
-        "championName": [p["championName"] for p in participants],
-        "individualPosition": [p["individualPosition"]for p in participants],
-        "kills": [p["kills"] for p in participants],
-        "deaths": [p["deaths"] for p in participants],
-        "assists": [p["assists"] for p in participants],
-        "goldEarned": [p["goldEarned"] for p in participants],
-        "totalDamageDealtToChampions": [p["totalDamageDealtToChampions"] for p in participants],
-        "totalMinionsKilled": [p["totalMinionsKilled"] for p in participants],
-        "visionScore": [p["visionScore"] for p in participants],
-        "wardsPlaced": [p["wardsPlaced"] for p in participants],
-        "wardsKilled": [p["wardsKilled"] for p in participants],
-        "win": [p["win"] for p in participants],
-        "firstBloodKill": [p["firstBloodKill"] for p in participants],
-    }
+    for i in range(10):
+        row = {
+            "gameDuration": match_doc["json"]["info"]["gameDuration"],
+            "championName": participants[i]["championName"],
+            "individualPosition": participants[i]["individualPosition"],
+            "kills": participants[i]["kills"],
+            "deaths": participants[i]["deaths"],
+            "assists": participants[i]["assists"],
+            "goldEarned": participants[i]["goldEarned"],
+            "totalDamageDealtToChampions": participants[i]["totalDamageDealtToChampions"],
+            "totalMinionsKilled": participants[i]["totalMinionsKilled"],
+            "visionScore": participants[i]["visionScore"],
+            "wardsPlaced": participants[i]["wardsPlaced"],
+            "wardsKilled": participants[i]["wardsKilled"],
+            "win": participants[i]["win"],
+            "firstBloodKill": participants[i]["firstBloodKill"],
+        }
+        rows.append(row)
+
+    return rows
