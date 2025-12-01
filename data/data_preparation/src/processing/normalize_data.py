@@ -7,8 +7,13 @@ df = pd.read_parquet("data/matches_dataset.parquet")
 df = df[df.gameDuration > 300]
 
 #We make sure there is no troll players
-df = df[df.totalMinionsKilled < 10]
-df = df[df.goldEarned < 2000]
+df = df[df.totalMinionsKilled > 10]
+df = df[df.goldEarned > 2000]
+
+df["individualPosition"] = df.individualPosition.replace(
+    "UTILITY", "SUPPORT"
+)
+
 
 # Add KDA variable combining kills deaths and assists
 df["KDA"] = (df.kills + df.assists)/df.deaths.replace(0,1)
@@ -32,14 +37,12 @@ df["win"] = df.win.astype(int)
 df["firstBloodKill"] = df.firstBloodKill.astype(int) 
 
 #Ensure we have roles inside params
-df = df[df.individualPosition.isin(["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"])]
-
+df = df[df.individualPosition.isin(["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "SUPPORT"])]
 
 # Now we apply normalization so the ML algorithm can learn better and faster
 scaler = StandardScaler()
 columns = ["KDA", "goldMin", "dmgMin", "visionMin", "CSMin"]
 df[columns] = scaler.fit_transform(df[columns])
 
-
-
 print(df)
+df.to_parquet("data/matches_clean_dataset.parquet")
