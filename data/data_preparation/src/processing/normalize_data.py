@@ -14,35 +14,43 @@ df["individualPosition"] = df.individualPosition.replace(
     "UTILITY", "SUPPORT"
 )
 
-
-# Add KDA variable combining kills deaths and assists
-df["KDA"] = (df.kills + df.assists)/df.deaths.replace(0,1)
-
 # Add game duration in minutes
 df["minutesDuration"] = df.gameDuration/60
+df = df.drop(columns=["gameDuration"], errors="ignore")
 
 # Add cs farmed per minute in game
 df["CSMin"] = df.totalMinionsKilled/df.minutesDuration
+df = df.drop(columns=["totalMinionsKilled"], errors="ignore")
 
 # Add gold per minute
 df["goldMin"] = df.goldEarned/df.minutesDuration
+df = df.drop(columns=["goldEarned"], errors="ignore")
 
 #Add damage per minute
 df["dmgMin"] = df.totalDamageDealtToChampions/df.minutesDuration
+df = df.drop(columns=["totalDamageDealtToChampions"], errors="ignore")
 
 #Add vision score per minute
 df["visionMin"] = df.visionScore/df.minutesDuration
+df = df.drop(columns=["visionScore"], errors="ignore")
+df = df.drop(columns=["wardsPlaced"], errors="ignore")
+df = df.drop(columns=["wardsKilled"], errors="ignore")
+
+#Delete the columns that are not useful but we thoought they were
+df = df.drop(columns=["firstBloodKill"], errors="ignore")
+
 #Convert booleans into number
 df["win"] = df.win.astype(int)
-df["firstBloodKill"] = df.firstBloodKill.astype(int) 
 
 #Ensure we have roles inside params
 df = df[df.individualPosition.isin(["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "SUPPORT"])]
 
 # Now we apply normalization so the ML algorithm can learn better and faster
 scaler = StandardScaler()
-columns = ["KDA", "goldMin", "dmgMin", "visionMin", "CSMin"]
+columns = ["goldMin", "dmgMin", "visionMin", "CSMin"]
 df[columns] = scaler.fit_transform(df[columns])
 
 print(df)
+
+df = df.reset_index(drop=True)
 df.to_parquet("data/matches_clean_dataset.parquet")
