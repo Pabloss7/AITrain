@@ -44,13 +44,15 @@ df["win"] = df.win.astype(int)
 
 #Ensure we have roles inside params
 df = df[df.individualPosition.isin(["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "SUPPORT"])]
+df["championName"] = df["championName"].astype("category")
+df["individualPosition"] = df["individualPosition"].astype("category")
 
 # Now we apply normalization so the ML algorithm can learn better and faster
 scaler = StandardScaler()
 columns = ["goldMin", "dmgMin", "visionMin", "CSMin"]
 df[columns] = scaler.fit_transform(df[columns])
 
-print(df)
+print(df.dtypes)
 
 df = df.reset_index(drop=True)
-df.to_parquet("data/matches_clean_dataset.parquet")
+df.to_parquet("data/matches_clean_dataset.parquet", index=False)
