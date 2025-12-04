@@ -10,4 +10,7 @@ warnings.filterwarnings("ignore")
 
 matches = pd.read_parquet("../data/matches_clean_dataset.parquet")
 
+x, y = matches.drop(columns=["win"]), matches["win"]
+
+
 print(matches.describe(exclude=np.number))
