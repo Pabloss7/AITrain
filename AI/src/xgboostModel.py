@@ -9,8 +9,12 @@ warnings.filterwarnings("ignore")
 
 matches = pd.read_parquet("../data/matches_clean_dataset.parquet")
 
+# Apply one hot encoding so we enable shap to use our categorical features
+categorical_columns = ["championName", "individualPosition"]
+matches_encoded = pd.get_dummies(matches, columns=categorical_columns)
+
 # We split the result of the game so we want to predict who will win
-x, y = matches.drop(columns=["win"]), matches["win"]
+x, y = matches_encoded.drop(columns=["win"]), matches_encoded["win"]
 
 #Split data into train and test
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
