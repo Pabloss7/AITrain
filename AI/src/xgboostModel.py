@@ -19,8 +19,8 @@ x, y = matches_encoded.drop(columns=["win"]), matches_encoded["win"]
 #Split data into train and test
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
 
-dtrain = xgb.DMatrix(x_train, y_train, enable_categorical=True)
-dtest = xgb.DMatrix(x_test, y_test, enable_categorical=True)
+dtrain = xgb.DMatrix(x_train, y_train)
+dtest = xgb.DMatrix(x_test, y_test)
 
 
 # Define hyperparameters
