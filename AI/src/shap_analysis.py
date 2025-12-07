@@ -43,24 +43,23 @@ matches_encoded = pd.get_dummies(matches, columns=categorical_columns)
 
 X, Y = matches_encoded.drop(columns=["win"]), matches_encoded["win"]
 
+background = shap.sample(X, 100)
+
 # Loads the model previously trained
 model = xgb.Booster()
 model.load_model("models/xgboost_model.json")
 
 explainer = shap.TreeExplainer(
     model,
+    data=background,
     feature_perturbation="interventional"
     )
 
-print(matches.dtypes)
-shap_values = explainer.shap_values(
-    X,
-    approximate=True
-    )
+#shap_values = explainer.shap_values(X)
 #~Test individual recomendation
-idx = 10
+idx = 200
 player_features = X.iloc[idx]
-player_shap_values = shap_values[idx]
+player_shap_values = explainer.shap_values(player_features)
 
 sorted_idx = np.argsort(np.abs(player_shap_values))[::-1]
 
