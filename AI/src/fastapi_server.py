@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import pandas as pd
-
+from dotenv import load_dotenv
+import os
 from shap_explainer import explain_match
 from recommendations import generate_recommendation
 from preprocessing import preprocess_player_match
@@ -10,6 +11,8 @@ app = FastAPI(
     title="Match AI recommendation system",
     version="1.0.0"
 )
+
+load_dotenv()
 
 
 ### REQUEST BODY
@@ -27,14 +30,17 @@ class MatchRequest(BaseModel):
     visionMin: float
 
 ### EDNPOINTS
-@app.post("analyze-match")
+@app.post("/analyze-match")
 def analyze_match(match: MatchRequest):
+    print("endpoint funciona")
     df = pd.DataFrame([match.dict()])
+    
+    categorical_columns = os.getenv("CATEGORICAL_COLUMNS").split(",")
+    columns = os.getenv("COLUMNS").split(",")
+    df_processed = preprocess_player_match(df, categorical_columns, columns)
 
-    df_processed = preprocess_player_match(df, X.columns)
-
-    top_features = explain_match(df_processed, explainer)
-
+    top_features = explain_match(df_processed)
+    
     recommendations = []
     for feature, value, shap_value in top_features:
         rec = generate_recommendation(feature, value, shap_value)

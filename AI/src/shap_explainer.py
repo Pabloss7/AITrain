@@ -21,10 +21,10 @@ explainer = shap.TreeExplainer(
     data=background,
     feature_perturbation="interventional"
     )
-
+#TODO: ARREGLAR EL PROBLEMA DE LAS COLUMNAS DE SHAP
 def explain_match(single_match_features):
     shap_values = explainer.shap_values(single_match_features)
-    
+    print("i'm here")
     sorted_idx = np.argsort(np.abs(shap_values))[::-1][:5]
 
     top_features = [
