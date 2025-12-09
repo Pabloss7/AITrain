@@ -57,7 +57,7 @@ explainer = shap.TreeExplainer(
 
 #shap_values = explainer.shap_values(X)
 #~Test individual recomendation
-idx = 200
+idx = 250
 player_features = X.iloc[idx]
 player_shap_values = explainer.shap_values(player_features)
 
