@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ResponseStatusException;
 
 
 public class RiotAPIService {
@@ -16,15 +17,11 @@ public class RiotAPIService {
     private final WebClient webClient = WebClient.builder().build();
 
     public String getSingleMatch(String summonerName, String tagLine){
-       try{
            String summonerJSON = getAccount(summonerName,tagLine);
            JsonObject obj = JsonParser.parseString(summonerJSON).getAsJsonObject();
            String playerPUUID = obj.get("puuid").getAsString();
 
           return getMatch(playerPUUID);
-       }catch(Exception e){
-           return null;
-       }
     }
 
     private String getMatch(String playerPUUID){
@@ -38,6 +35,9 @@ public class RiotAPIService {
                    .bodyToMono(String.class)
                    .block();
            JsonArray idsArray = JsonParser.parseString(ids).getAsJsonArray();
+           if(idsArray.isEmpty()){
+               throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No games found");
+           }
            String matchID = idsArray.get(0).getAsString();
            String matchInfoUrl = matchesURI+matchID;
 
@@ -55,7 +55,11 @@ public class RiotAPIService {
             System.out.println(matchJSON);
             return  matchJSON.toString();
        }catch(Exception e){
-            return HttpStatus.INTERNAL_SERVER_ERROR.toString();
+         if(e instanceof ResponseStatusException){
+             throw e;
+         }else{
+             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+         }
        }
     }
 
