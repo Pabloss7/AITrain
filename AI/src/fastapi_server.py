@@ -1,3 +1,4 @@
+import json
 from fastapi import FastAPI
 from pydantic import BaseModel
 import pandas as pd
@@ -6,6 +7,12 @@ import os
 from shap_explainer import explain_match
 from recommendations import generate_recommendation
 from preprocessing import preprocess_player_match
+from models.requestModels import MatchProcessRequest
+from processing.extract_metrics import extract_metrics, extract_metrics_player
+from processing.clean_data import clean_dataset
+from processing.normalize_data import normalize_data
+from db.mongo_client import insert_mongo_response
+import httpx
 
 app = FastAPI(
     title="Match AI recommendation system",
@@ -14,42 +21,46 @@ app = FastAPI(
 
 load_dotenv()
 
+async def notify_core(job_id: str,core_url: str):
+    payload = {"jobId": job_id, "status": "COMPLETED"}
 
-### REQUEST BODY
-class MatchRequest(BaseModel):
-    gameDuration: float
-    championName: str
-    individualPosition: str
-    kills: int
-    deaths: int
-    assists: int
-    minutesDuration: float
-    CSMin: float
-    goldMin: float
-    dmgMin: float
-    visionMin: float
+    async with httpx.AsyncClient() as client:
+        try:
+            response: await client.post(core_url, json=payload)
+            response.raise_for_status()
+            print("Core communication:", response.status_code)
+        except httpx.HTTPError as e:
+            print("Error with Core microservice:", e)
 
 ### EDNPOINTS
 @app.post("/analyze-match")
-def analyze_match(match: MatchRequest):
-    print("endpoint funciona")
-    df = pd.DataFrame([match.dict()])
-    
-    categorical_columns = os.getenv("CATEGORICAL_COLUMNS").split(",")
-    columns = os.getenv("COLUMNS").split(",")
-    df_processed = preprocess_player_match(df, categorical_columns, columns)
+def analyze_match(match: MatchProcessRequest):
+    try:
+        metrics = extract_metrics_player(match.info,match.metadata, match.puuid)
 
-    top_features = explain_match(df_processed)
-    
-    recommendations = []
-    for feature, value, shap_value in top_features:
-        rec = generate_recommendation(feature, value, shap_value)
-        if rec:
-            recommendations.append({
-                "feature": feature,
-                "value": value,
-                "shap_value": shap_value,
-                "recommendation": rec
-            })
+        df = clean_dataset(metrics)
+        df = normalize_data(df)
+        categorical_columns = os.getenv("CATEGORICAL_COLUMNS").split(",")
+        columns = os.getenv("COLUMNS").split(",")
+        df_processed = preprocess_player_match(df, categorical_columns, columns)
+
+        top_features = explain_match(df_processed)
         
-    return {"recommendations": recommendations}
+        recommendations = []
+        for feature, value, shap_value in top_features:
+            rec = generate_recommendation(feature, value, shap_value)
+            if rec:
+                recommendations.append({
+                    "feature": feature,
+                    "value": value,
+                    "shap_value": shap_value,
+                    "recommendation": rec
+                })
+        insert_mongo_response(match.jobId, recommendations)
+        notify_core(match.jobId,"LA_URL_DEL_CORE")
+        return {"message": "Match processed"}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"message": "Error processing match", "error": str(e)}
+        )    
