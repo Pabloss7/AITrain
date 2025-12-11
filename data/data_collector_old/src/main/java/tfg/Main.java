@@ -10,7 +10,6 @@ public class Main {
 
 
         try {
-            // TODO: mover responsabilidades a otra clase + introducir el bucle para 10k games
             Dotenv dotenv = Dotenv.load();
             String apikey = dotenv.get("RIOT_API_KEY");
             String accountURI = dotenv.get("RIOT_ACCOUNT_URL");
