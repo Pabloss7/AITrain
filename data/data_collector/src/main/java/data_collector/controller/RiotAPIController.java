@@ -1,6 +1,6 @@
 package data_collector.controller;
 
-import data_collector.DTO.AnalyzeMatchRequest;
+import data_collector.DTO.AnalyzeMatchRequestDTO;
 import data_collector.service.RiotAPIService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +15,8 @@ public class RiotAPIController {
 
     @PostMapping("/analyze-match")
     @ResponseStatus(HttpStatus.OK)
-    public String analyzeMatch(@RequestBody AnalyzeMatchRequest request){
-        String match = service.getSingleMatch(request.getSummonerName(),request.getTagLine());
+    public String analyzeMatch(@RequestBody AnalyzeMatchRequestDTO request){
+        String match = service.getSingleMatch(request.getSummonerName(),request.getTagLine(), request.getJobId());
         return "analysis in process for match:\n"+match;
     }
 }
