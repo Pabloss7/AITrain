@@ -6,5 +6,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 EXPOSE 5000
-
-CMD ["uvicorn", "fastapi_server:app", "--host", "0.0.0.0", "--port", "5000"]
+#TODO: fix python image build
+CMD ["uvicorn", "src.fastapi_server:app", "--host", "0.0.0.0", "--port", "5000"]
