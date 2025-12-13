@@ -36,7 +36,7 @@ def generate_recommendation(feature, value, shap_val):
     return None
 
 
-matches = pd.read_parquet("../data/matches_clean_dataset.parquet")
+matches = pd.read_parquet("./data/matches_clean_dataset.parquet")
 
 categorical_columns = ["championName", "individualPosition"]
 matches_encoded = pd.get_dummies(matches, columns=categorical_columns)

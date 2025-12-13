@@ -7,7 +7,7 @@ import os
 
 warnings.filterwarnings("ignore")
 
-matches = pd.read_parquet("../data/matches_clean_dataset.parquet")
+matches = pd.read_parquet("./data/matches_clean_dataset.parquet")
 
 # Apply one hot encoding so we enable shap to use our categorical features
 categorical_columns = ["championName", "individualPosition"]

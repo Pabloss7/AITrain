@@ -4,14 +4,14 @@ from pydantic import BaseModel
 import pandas as pd
 from dotenv import load_dotenv
 import os
-from shap_explainer import explain_match
-from recommendations import generate_recommendation
-from preprocessing import preprocess_player_match
-from models.requestModels import MatchProcessRequest
-from processing.extract_metrics import extract_metrics, extract_metrics_player
-from processing.clean_data import clean_dataset
-from processing.normalize_data import normalize_data
-from db.mongo_client import insert_mongo_response
+from src.shap_explainer import explain_match
+from src.recommendations import generate_recommendation
+from src.preprocessing import preprocess_player_match
+from src.models.requestModels import MatchProcessRequest
+from src.processing.extract_metrics import extract_metrics, extract_metrics_player
+from src.processing.clean_data import clean_dataset
+from src.processing.normalize_data import normalize_data
+from src.db.mongo_client import insert_mongo_response
 import httpx
 
 app = FastAPI(
