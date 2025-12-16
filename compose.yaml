@@ -1,7 +1,6 @@
 services:
   ms-data-collector:
     build: ./data/data_collector
-    container_name: ms-data
     ports:
       - "8080:8080"
     depends_on:
@@ -17,7 +16,6 @@ services:
   
   ms-ai:
     build: ./ai
-    container_name: ms-ai
     ports:
       - "5000:5000"
     depends_on:

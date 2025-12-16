@@ -7,10 +7,11 @@ import data_collector.DTO.MatchAISenderDTO;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 
-
+@Service
 public class RiotAPIService {
     Dotenv dotenv = Dotenv.load();
     String apiKey = dotenv.get("RIOT_API_KEY");
@@ -53,8 +54,11 @@ public class RiotAPIService {
 
            MatchAISenderDTO matchDTO = buildMatchDTO(jobId,playerPUUID,matchJSON);
 
+           String ai_url = dotenv.get("AI_URL");
+           String URL = ai_url+"/analyze-match";
+
            webClient.post()
-                   .uri(dotenv.get("AI_URL"+"/analyze-match"))
+                   .uri(URL)
                    .header(HttpHeaders.CONTENT_TYPE, "application/json")
                    .bodyValue(matchDTO)
                    .retrieve()

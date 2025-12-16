@@ -12,7 +12,6 @@ import java.util.Map;
 @Getter
 @Data
 @Builder
-@SuperBuilder
 public class MatchAISenderDTO {
     String jobId;
     String matchId;

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,ConfigDict
 from typing import List, Dict, Any, Optional
 
 
@@ -13,15 +13,16 @@ class Participant(BaseModel):
     totalMinionsKilled: Optional[int] = None
     visionScore: Optional[int] = None
     goldEarned: Optional[int] = None
-    # Esto evita que tengas que mantener a mano los +200 campos.
-    __root__: Dict[str, Any] = {}
+
+    model_config = ConfigDict(extra="allow")
+
 
 
 class Info(BaseModel):
     gameCreation: Optional[int] = None
     gameDuration: Optional[int] = None
     queueId: Optional[int] = None
-    participants: List[Dict[str, Any]]  # datos completos tal cual los devuelve Riot
+    participants: List[Participant]  # datos completos tal cual los devuelve Riot
 
 
 class Metadata(BaseModel):

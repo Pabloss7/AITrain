@@ -10,7 +10,11 @@ import org.springframework.web.bind.annotation.*;
 
 public class RiotAPIController {
 
-    private RiotAPIService service = new RiotAPIService();
+    private final RiotAPIService service;
+
+    public RiotAPIController(RiotAPIService service) {
+        this.service = service;
+    }
 
 
     @PostMapping("/analyze-match")
