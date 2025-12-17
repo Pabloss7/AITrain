@@ -25,21 +25,21 @@ def extract_metrics(match_doc):
 def extract_metrics_player(info,metadata, puuid):
     row = []
     position = metadata.participants.index(puuid)
-    player = info["participants"][position]
+    player = info.participants[position]
     row = {
-          "gameDuration": info["gameDuration"],
-            "championName": player["championName"],
-            "individualPosition": player["individualPosition"],
-            "kills": player["kills"],
-            "deaths": player["deaths"],
-            "assists": player["assists"],
-            "goldEarned": player["goldEarned"],
-            "totalDamageDealtToChampions": player["totalDamageDealtToChampions"],
-            "totalMinionsKilled": player["totalMinionsKilled"],
-            "visionScore": player["visionScore"],
-            "wardsPlaced": player["wardsPlaced"],
-            "wardsKilled": player["wardsKilled"],
-            "win": player["win"],
-            "firstBloodKill": player["firstBloodKill"],
+          "gameDuration": info.gameDuration,
+            "championName": player.championName,
+            "individualPosition": player.individualPosition,
+            "kills": player.kills,
+            "deaths": player.deaths,
+            "assists": player.assists,
+            "goldEarned": player.goldEarned,
+            "totalDamageDealtToChampions": player.totalDamageDealtToChampions,
+            "totalMinionsKilled": player.totalMinionsKilled,
+            "visionScore": player.visionScore,
+            "wardsPlaced": player.wardsPlaced,
+            "wardsKilled": player.wardsKilled,
+            "win": player.win,
+            "firstBloodKill": player.firstBloodKill,
     }
     return row

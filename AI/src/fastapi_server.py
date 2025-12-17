@@ -1,11 +1,13 @@
-import json
+import httpx
+import traceback
+import pandas as pd
+import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel
-import pandas as pd
 from dotenv import load_dotenv
-import os
+
 from src.shap_explainer import explain_match
 from src.recommendations import generate_recommendation
 from src.preprocessing import preprocess_player_match
@@ -14,7 +16,7 @@ from src.processing.extract_metrics import extract_metrics, extract_metrics_play
 from src.processing.clean_data import clean_dataset
 from src.processing.normalize_data import normalize_data
 from src.db.mongo_client import insert_mongo_response
-import httpx
+
 
 app = FastAPI(
     title="Match AI recommendation system",
@@ -60,8 +62,10 @@ def analyze_match(match: MatchProcessRequest):
         categorical_columns = os.getenv("CATEGORICAL_COLUMNS").split(",")
         columns = os.getenv("COLUMNS").split(",")
         df_processed = preprocess_player_match(df, categorical_columns, columns)
-
+        print("Data processed")
+        
         top_features = explain_match(df_processed)
+        print("Explainer processed")
         
         recommendations = []
         for feature, value, shap_value in top_features:
@@ -74,9 +78,10 @@ def analyze_match(match: MatchProcessRequest):
                     "recommendation": rec
                 })
         insert_mongo_response(match.jobId, recommendations)
-        notify_core(match.jobId,"LA_URL_DEL_CORE")
+        #notify_core(match.jobId,"LA_URL_DEL_CORE")
         return {"message": "Match processed"}
     except Exception as e:
+        traceback.print_exc()
         return JSONResponse(
             status_code=500,
             content={"message": "Error processing match", "error": str(e)}

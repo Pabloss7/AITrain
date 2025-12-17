@@ -1,6 +1,6 @@
 import pandas as pd
 import shap 
-import xgboost as xgb
+from xgboost import XGBClassifier
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -15,7 +15,7 @@ def load_matches():
     path = os.path.join(base_path(), "data", "matches_clean_dataset.parquet")
     return pd.read_parquet(path)
 
-def load_tools():
+def load_explainer():
     global explainer, feature_columns
 
     if explainer is not None:
@@ -34,6 +34,8 @@ def load_tools():
 
     model = xgb.Booster()
     model.load_model(model_path)
+
+    feature_columns = X.columns.tolist()
 
     explainer = shap.TreeExplainer(
         model,
