@@ -1,5 +1,7 @@
 import json
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel
 import pandas as pd
 from dotenv import load_dotenv
@@ -20,6 +22,21 @@ app = FastAPI(
 )
 
 load_dotenv()
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    body = await request.body()
+    print("VALIDATION ERROR DETECTED")
+    print(exc.errors())
+    print("BODY:")
+    print(body.decode()) 
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": exc.errors(),
+            "body": body.decode()
+        }
+    )
 
 async def notify_core(job_id: str,core_url: str):
     payload = {"jobId": job_id, "status": "COMPLETED"}
@@ -64,3 +81,10 @@ def analyze_match(match: MatchProcessRequest):
             status_code=500,
             content={"message": "Error processing match", "error": str(e)}
         )    
+
+@app.post("/analyze-match-debug")
+async def debug_endpoint(request: Request):
+    body = await request.json()
+    print("received:")
+    print(body)
+    return {"ok": True}

@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 
@@ -70,8 +71,10 @@ public class RiotAPIService {
                    .retrieve()
                    .bodyToMono(Void.class)
                    .block();
-
-           System.out.println(matchJSON);
+           ObjectMapper mapper = new ObjectMapper();
+           System.out.println(
+           "Sending to AI ms: \n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(matchDTO)
+           );
            return  matchJSON.toString();
        }catch(Exception e){
          if(e instanceof ResponseStatusException){
