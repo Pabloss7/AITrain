@@ -1,6 +1,6 @@
 import pandas as pd
 import shap 
-import xgboost as xgb
+from xgboost import XGBClassifier
 import matplotlib.pyplot as plt
 import numpy as np
 

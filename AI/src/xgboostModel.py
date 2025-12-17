@@ -1,6 +1,6 @@
 import pandas as pd
 import warnings
-import xgboost as xgb
+from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, roc_auc_score, classification_report
 import os
@@ -17,36 +17,29 @@ matches_encoded = pd.get_dummies(matches, columns=categorical_columns)
 x, y = matches_encoded.drop(columns=["win"]), matches_encoded["win"]
 
 #Split data into train and test
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42, stratify=y)
+x_train, x_test, y_train, y_test = train_test_split(
+   x, y, test_size=0.2, random_state=42, stratify=y
+   )
 
-dtrain = xgb.DMatrix(x_train, y_train)
-dtest = xgb.DMatrix(x_test, y_test)
 
-
-# Define hyperparameters
-params = {
-   "objective": "binary:logistic",
-   "tree_method": "gpu_hist",
-   "eval_metric": ["logloss", "auc"]
-}
-# Number of boosting rounds
-n = 2000
-
-evaluations = [(dtrain, "train"), (dtest, "validation")]
-
-model = xgb.train(
-   params=params,
-   dtrain=dtrain,
-   num_boost_round=n,
-   evals=evaluations,
-   verbose_eval=100,
+model = XGBClassifier(
+   objective="binary:logistic",
+   tree_method="gpu_hist",
+   eval_metric="auc",
+   n_estimators=2000,
    early_stopping_rounds=100
 )
 
+model.fit(
+   x_train,
+   y_train,
+   eval_set=[(x_test, y_test)],
+   verbose=100
+)
 os.makedirs("models",exist_ok=True)
 model.save_model("models/xgboost_model.json")
 
-probs = model.predict(dtest)
+probs = model.predict_proba(x_test)[:,1]
 preds = (probs >= 0.5).astype(int)
 
 acc = accuracy_score(y_test, preds)
