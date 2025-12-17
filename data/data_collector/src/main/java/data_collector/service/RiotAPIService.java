@@ -1,5 +1,6 @@
 package data_collector.service;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -11,9 +12,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Map;
+
 @Service
 public class RiotAPIService {
-    Dotenv dotenv = Dotenv.load();
+    Dotenv dotenv = Dotenv.configure()
+            .ignoreIfMissing()
+            .load();
+        
     String apiKey = dotenv.get("RIOT_API_KEY");
     String accountURI = dotenv.get("RIOT_ACCOUNT_URL");
     String matchesURI = dotenv.get("RIOT_MATCHES_URL");
@@ -91,11 +97,15 @@ public class RiotAPIService {
         }
     }
     private MatchAISenderDTO buildMatchDTO(String jobId, String puuid, JsonObject matchJSON){
+        Gson gson = new Gson();
+        Map<String, Object> metada = gson.fromJson(matchJSON.getAsJsonObject("metadata"), Map.class);
+        Map<String, Object> info = gson.fromJson(matchJSON.getAsJsonObject("info"), Map.class);
+
         return  MatchAISenderDTO.builder()
                 .jobId(jobId)
                 .puuid(puuid)
-                .metadata(matchJSON.get("metadata"))
-                .info(matchJSON.get("info"))
+                .metadata(metada)
+                .info(info)
                 .build();
     }
 }

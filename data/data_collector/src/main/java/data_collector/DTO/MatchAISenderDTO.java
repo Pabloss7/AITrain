@@ -10,12 +10,11 @@ import java.util.Map;
 
 @Setter
 @Getter
-@Data
 @Builder
 public class MatchAISenderDTO {
     String jobId;
     String matchId;
     String puuid;
-    Object metadata;
-    Object info;
+    Map<String, Object> metadata;
+    Map<String, Object> info;
 }
