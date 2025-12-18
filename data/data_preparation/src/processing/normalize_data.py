@@ -1,7 +1,8 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+import joblib
 
-df = pd.read_parquet("data/matches_dataset.parquet")
+df = pd.read_parquet("../data/matches_dataset.parquet")
 
 # Erase matches shorter tahn 5 minutes
 df = df[df.gameDuration > 300]
@@ -51,8 +52,9 @@ df["individualPosition"] = df["individualPosition"].astype("category")
 scaler = StandardScaler()
 columns = ["goldMin", "dmgMin", "visionMin", "CSMin"]
 df[columns] = scaler.fit_transform(df[columns])
+joblib.dump(scaler, "../data/standard_scaler.joblib")
 
 print(df.dtypes)
 
 df = df.reset_index(drop=True)
-df.to_parquet("data/matches_clean_dataset.parquet", index=False)
+df.to_parquet("../data/matches_clean_dataset.parquet", index=False)
