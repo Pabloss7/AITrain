@@ -4,8 +4,6 @@ def extract_metrics(match_doc):
     for i in range(10):
         row = {
             "gameDuration": match_doc["json"]["info"]["gameDuration"],
-            "championName": participants[i]["championName"],
-            "individualPosition": participants[i]["individualPosition"],
             "kills": participants[i]["kills"],
             "deaths": participants[i]["deaths"],
             "assists": participants[i]["assists"],
@@ -28,8 +26,6 @@ def extract_metrics_player(info,metadata, puuid):
     player = info.participants[position]
     row = {
           "gameDuration": info.gameDuration,
-            "championName": player.championName,
-            "individualPosition": player.individualPosition,
             "kills": player.kills,
             "deaths": player.deaths,
             "assists": player.assists,
