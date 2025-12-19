@@ -42,4 +42,5 @@ def extract_metrics_player(info,metadata, puuid):
             "win": player.win,
             "firstBloodKill": player.firstBloodKill,
     }
+    print("Metrics from player:\n",row)
     return row

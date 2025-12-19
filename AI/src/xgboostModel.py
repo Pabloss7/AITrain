@@ -3,18 +3,17 @@ import warnings
 from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, roc_auc_score, classification_report
+from sklearn.preprocessing import StandardScaler
 import os
+import joblib
 
 warnings.filterwarnings("ignore")
 
 matches = pd.read_parquet("./data/matches_clean_dataset.parquet")
 
-# Apply one hot encoding so we enable shap to use our categorical features
-categorical_columns = ["championName", "individualPosition"]
-matches_encoded = pd.get_dummies(matches, columns=categorical_columns)
 
 # We split the result of the game so we want to predict who will win
-x, y = matches_encoded.drop(columns=["win"]), matches_encoded["win"]
+x, y = matches.drop(columns=["win"]), matches["win"]
 
 #Split data into train and test
 x_train, x_test, y_train, y_test = train_test_split(
@@ -24,7 +23,7 @@ x_train, x_test, y_train, y_test = train_test_split(
 
 model = XGBClassifier(
    objective="binary:logistic",
-   tree_method="gpu_hist",
+   tree_method="hist",
    eval_metric="auc",
    n_estimators=2000,
    early_stopping_rounds=100
@@ -37,7 +36,8 @@ model.fit(
    verbose=100
 )
 os.makedirs("models",exist_ok=True)
-model.save_model("models/xgboost_model.json")
+model.save_model("models/xgboost_model.bin")
+
 
 probs = model.predict_proba(x_test)[:,1]
 preds = (probs >= 0.5).astype(int)

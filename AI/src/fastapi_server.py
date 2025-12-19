@@ -1,6 +1,7 @@
 import httpx
 import traceback
 import pandas as pd
+import numpy as np
 import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -52,18 +53,19 @@ async def notify_core(job_id: str,core_url: str):
             print("Error with Core microservice:", e)
 
 ### EDNPOINTS
-@app.post("/analyze-match")
+@app.post("/analyze-match", status_code=201)
 def analyze_match(match: MatchProcessRequest):
     try:
         metrics = extract_metrics_player(match.info,match.metadata, match.puuid)
 
         df = clean_dataset(metrics)
         df = normalize_data(df)
-        categorical_columns = os.getenv("CATEGORICAL_COLUMNS").split(",")
-        columns = os.getenv("COLUMNS").split(",")
-        df_processed = preprocess_player_match(df, categorical_columns, columns)
-        print("Data processed")
         
+        columns = os.getenv("COLUMNS").split(",")
+        df_processed = preprocess_player_match(df, columns)
+        
+        print("Data processed")
+        df_processed = df_processed.astype(np.float64)
         top_features = explain_match(df_processed)
         print("Explainer processed")
         

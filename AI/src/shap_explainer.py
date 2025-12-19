@@ -4,6 +4,7 @@ from xgboost import XGBClassifier
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import json
 
 explainer = None
 feature_columns = None
@@ -22,23 +23,20 @@ def load_explainer():
         return explainer, feature_columns
     
     matches = load_matches()
-    categorical_columns = ["championName", "individualPosition"]
 
-    matches_encoded = pd.get_dummies(matches, columns=categorical_columns)
+    X = matches.drop(columns=["win"])
 
-    X = matches_encoded.drop(columns=["win"])
+    background = shap.sample(X, 100).to_numpy(dtype=np.float64)
 
-    background = shap.sample(X, 100)
+    model_path = os.path.join(base_path(), "models", "xgboost_model.bin")
 
-    model_path = os.path.join(base_path(), "models", "xgboost_model.json")
-
-    model = xgb.Booster()
+    model = XGBClassifier()
     model.load_model(model_path)
-
+    booster = model.get_booster()
     feature_columns = X.columns.tolist()
 
     explainer = shap.TreeExplainer(
-        model,
+        booster,
         data=background,
         feature_perturbation="interventional"
         )
@@ -47,8 +45,12 @@ def load_explainer():
 #TODO: ARREGLAR EL PROBLEMA DE LAS COLUMNAS DE SHAP
 def explain_match(single_match_features):
     explainer, feature_columns = load_explainer()
+    X = single_match_features.to_numpy(dtype=np.float64)
 
-    shap_values = explainer.shap_values(single_match_features)[0]
+    shap_values = explainer.shap_values(
+        X,
+        check_additivity=False
+    )[0]
     
     sorted_idx = np.argsort(np.abs(shap_values))[::-1][:5]
 
