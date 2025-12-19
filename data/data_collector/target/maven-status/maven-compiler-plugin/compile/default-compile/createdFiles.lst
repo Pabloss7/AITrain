@@ -1,0 +1,6 @@
+data_collector\DTO\MatchAISenderDTO.class
+data_collector\DataCollectorApplication.class
+data_collector\service\RiotAPIService.class
+data_collector\controller\RiotAPIController.class
+data_collector\DTO\AnalyzeMatchRequestDTO.class
+data_collector\DTO\MatchAISenderDTO$MatchAISenderDTOBuilder.class
