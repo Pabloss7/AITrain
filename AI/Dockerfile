@@ -1,10 +1,10 @@
-FROM python:3.10-slim
+FROM python:3.10
 WORKDIR /app
-COPY requirments.txt .
-RUN pip install --no-cache-dir -r requirments.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
 EXPOSE 5000
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["uvicorn", "src.fastapi_server:app", "--host", "0.0.0.0", "--port", "5000", "--log-level", "debug"]

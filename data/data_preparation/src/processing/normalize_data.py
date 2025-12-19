@@ -1,7 +1,8 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+import joblib
 
-df = pd.read_parquet("data/matches_dataset.parquet")
+df = pd.read_parquet("../../data/matches_dataset.parquet")
 
 # Erase matches shorter tahn 5 minutes
 df = df[df.gameDuration > 300]
@@ -10,9 +11,6 @@ df = df[df.gameDuration > 300]
 df = df[df.totalMinionsKilled > 10]
 df = df[df.goldEarned > 2000]
 
-df["individualPosition"] = df.individualPosition.replace(
-    "UTILITY", "SUPPORT"
-)
 
 # Add game duration in minutes
 df["minutesDuration"] = df.gameDuration/60
@@ -37,22 +35,22 @@ df = df.drop(columns=["wardsPlaced"], errors="ignore")
 df = df.drop(columns=["wardsKilled"], errors="ignore")
 
 #Delete the columns that are not useful but we thoought they were
-df = df.drop(columns=["firstBloodKill"], errors="ignore")
+#In case of championname and individual position we are droping the columns because they are
+# breaking shap, so we will be handling in other way than expected
+df = df.drop(columns=["firstBloodKill","championName","individualPosition"], errors="ignore")
 
 #Convert booleans into number
 df["win"] = df.win.astype(int)
 
-#Ensure we have roles inside params
-df = df[df.individualPosition.isin(["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "SUPPORT"])]
-df["championName"] = df["championName"].astype("category")
-df["individualPosition"] = df["individualPosition"].astype("category")
+
 
 # Now we apply normalization so the ML algorithm can learn better and faster
 scaler = StandardScaler()
 columns = ["goldMin", "dmgMin", "visionMin", "CSMin"]
 df[columns] = scaler.fit_transform(df[columns])
+joblib.dump(scaler, "../../data/standard_scaler.joblib")
 
 print(df.dtypes)
 
 df = df.reset_index(drop=True)
-df.to_parquet("data/matches_clean_dataset.parquet", index=False)
+df.to_parquet("../../data/matches_clean_dataset.parquet", index=False)

@@ -1,30 +1,40 @@
 package data_collector.service;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import data_collector.DTO.MatchAISenderDTO;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
+import tools.jackson.databind.ObjectMapper;
 
+import java.util.Map;
 
+@Service
 public class RiotAPIService {
-    Dotenv dotenv = Dotenv.load();
+    Dotenv dotenv = Dotenv.configure()
+            .ignoreIfMissing()
+            .load();
+        
     String apiKey = dotenv.get("RIOT_API_KEY");
     String accountURI = dotenv.get("RIOT_ACCOUNT_URL");
     String matchesURI = dotenv.get("RIOT_MATCHES_URL");
     private final WebClient webClient = WebClient.builder().build();
 
-    public String getSingleMatch(String summonerName, String tagLine){
+    public MatchAISenderDTO getSingleMatch(String summonerName, String tagLine, String jobId){
            String summonerJSON = getAccount(summonerName,tagLine);
            JsonObject obj = JsonParser.parseString(summonerJSON).getAsJsonObject();
            String playerPUUID = obj.get("puuid").getAsString();
 
-          return getMatch(playerPUUID);
+          return getMatch(playerPUUID, jobId);
     }
 
-    private String getMatch(String playerPUUID){
+    private MatchAISenderDTO getMatch(String playerPUUID, String jobId){
        try{
            String url = matchesURI+"by-puuid/"+playerPUUID+"/ids?type=ranked&start=0&count=1";
 
@@ -49,11 +59,26 @@ public class RiotAPIService {
                    .block();
            JsonObject matchJSON = JsonParser.parseString(match).getAsJsonObject();
 
-        //  webClient.post()
-        //          .uri(//LA URL DEL MS DE PYHON)
-        //          .body(matchJSON)
-            System.out.println(matchJSON);
-            return  matchJSON.toString();
+           MatchAISenderDTO matchDTO = buildMatchDTO(jobId,playerPUUID,matchJSON, matchID);
+
+           String ai_url = dotenv.get("AI_URL");
+           String URL = ai_url+"/analyze-match";
+
+           webClient.post()
+                   .uri(URL)
+                   .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                   .bodyValue(matchDTO)
+                   .retrieve()
+                   .bodyToMono(Void.class)
+                   .doOnSuccess(v -> System.out.println("Request sent to AI microservice"))
+                   .doOnError(e -> System.out.println("Error calling AI microservice: \n"+e))
+                   .subscribe();
+
+           ObjectMapper mapper = new ObjectMapper();
+           System.out.println(
+           "Sending to AI ms: \n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(matchDTO)
+           );
+           return  matchDTO;
        }catch(Exception e){
          if(e instanceof ResponseStatusException){
              throw e;
@@ -76,5 +101,18 @@ public class RiotAPIService {
         }catch(Exception e){
             return HttpStatus.INTERNAL_SERVER_ERROR.toString();
         }
+    }
+    private MatchAISenderDTO buildMatchDTO(String jobId, String puuid, JsonObject matchJSON, String matchId){
+        Gson gson = new Gson();
+        Map<String, Object> metada = gson.fromJson(matchJSON.getAsJsonObject("metadata"), Map.class);
+        Map<String, Object> info = gson.fromJson(matchJSON.getAsJsonObject("info"), Map.class);
+
+        return  MatchAISenderDTO.builder()
+                .jobId(jobId)
+                .puuid(puuid)
+                .matchId(matchId)
+                .metadata(metada)
+                .info(info)
+                .build();
     }
 }

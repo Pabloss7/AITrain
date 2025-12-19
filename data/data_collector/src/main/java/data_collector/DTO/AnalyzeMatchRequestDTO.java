@@ -5,7 +5,8 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class AnalyzeMatchRequest {
+public class AnalyzeMatchRequestDTO {
+    private String jobId;
     private String summonerName;
     private String tagLine;
 }

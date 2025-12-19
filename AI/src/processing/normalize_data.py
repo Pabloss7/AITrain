@@ -1,5 +1,10 @@
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+import os
+import joblib
+
+def base_path():
+    return os.path.dirname(os.path.dirname((__file__)))
 
 def normalize_data(df):
     # Erase matches shorter tahn 5 minutes
@@ -8,10 +13,6 @@ def normalize_data(df):
     #We make sure there is no troll players
     df = df[df.totalMinionsKilled > 10]
     df = df[df.goldEarned > 2000]
-
-    df["individualPosition"] = df.individualPosition.replace(
-        "UTILITY", "SUPPORT"
-    )
 
     # Add game duration in minutes
     df["minutesDuration"] = df.gameDuration/60
@@ -36,22 +37,19 @@ def normalize_data(df):
     df = df.drop(columns=["wardsKilled"], errors="ignore")
 
     #Delete the columns that are not useful but we thoought they were
-    df = df.drop(columns=["firstBloodKill"], errors="ignore")
+    df = df.drop(columns=["firstBloodKill", "championName", "individualPosition"], errors="ignore")
 
     #Convert booleans into number
     df["win"] = df.win.astype(int)
 
-    #Ensure we have roles inside params
-    df = df[df.individualPosition.isin(["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "SUPPORT"])]
-    df["championName"] = df["championName"].astype("category")
-    df["individualPosition"] = df["individualPosition"].astype("category")
-
     # Now we apply normalization so the ML algorithm can learn better and faster
-    scaler = StandardScaler()
+    path = os.path.join(base_path(),"models", "standard_scaler.joblib")
+    #TODO: ELIMINAR LAS COLUMNAS CATEGORICAS
+    scaler = joblib.load(path)
     columns = ["goldMin", "dmgMin", "visionMin", "CSMin"]
-    df[columns] = scaler.fit_transform(df[columns])
+    df[columns] = scaler.transform(df[columns])
 
-    print(df.dtypes)
+    print("Dataset from player: \n",df)
 
     df = df.reset_index(drop=True)
     return df

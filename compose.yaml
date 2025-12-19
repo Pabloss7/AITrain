@@ -1,27 +1,27 @@
-version: '3.9'
-
 services:
   ms-data-collector:
     build: ./data/data_collector
-    container_name: ms-data
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     depends_on:
-      - ms-AI
+      - ms-ai
       - mongo
     environment:
-      - AI_URL=http://ms-AI:5000
+      - ai_URL=http://ms-ai:5000
       - RIOT_API_KEY=${RIOT_API_KEY}
       - RIOT_ACCOUNT_URL=https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/
       - RIOT_MATCHES_URL=https://europe.api.riotgames.com/lol/match/v5/matches/
       - MONGO_URI=mongodb://mongo:27017
       - MONGO_DB=match_data
   
-  ms-AI:
-    build: ./AI
-    container_name: ms-AI
+  ms-ai:
+    build: ./ai
     ports:
       - "5000:5000"
+    env_file:
+      - .env
     depends_on:
       - mongo
     environment:
