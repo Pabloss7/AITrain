@@ -9,14 +9,15 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 public class DataService {
-   private final RestTemplate restTemplate;
+
+    private final RestTemplate restTemplate;
 
    @Value("${services.data.url}")
-    private String url;
+   private String url;
    //TODO: keep developing ms-core to data-ms connection
-   public  void starAnalysis(DataAnalysisRequest request){
+   public  void startAnalysis(DataAnalysisRequest request){
        restTemplate.postForEntity(
-               url+"/analysis",
+               url+"/analyze-match",
                request,
                Void.class
        );

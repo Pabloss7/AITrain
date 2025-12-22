@@ -36,49 +36,53 @@ public class RiotAPIService {
 
     private MatchAISenderDTO getMatch(String playerPUUID, String jobId){
        try{
-           String url = matchesURI+"by-puuid/"+playerPUUID+"/ids?type=ranked&start=0&count=1";
+            String url = matchesURI+"by-puuid/"+playerPUUID+"/ids?type=ranked&start=0&count=1";
 
-           String ids = webClient.get()
-                   .uri(url)
-                   .header("X-Riot-Token", apiKey)
-                   .retrieve()
-                   .bodyToMono(String.class)
-                   .block();
-           JsonArray idsArray = JsonParser.parseString(ids).getAsJsonArray();
-           if(idsArray.isEmpty()){
-               throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No games found");
-           }
-           String matchID = idsArray.get(0).getAsString();
-           String matchInfoUrl = matchesURI+matchID;
+            String ids = webClient.get()
+                    .uri(url)
+                    .header("X-Riot-Token", apiKey)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+            JsonArray idsArray = JsonParser.parseString(ids).getAsJsonArray();
+            if(idsArray.isEmpty()){
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No games found");
+            }
+            String matchID = idsArray.get(0).getAsString();
+            String matchInfoUrl = matchesURI+matchID;
 
-           String match  = webClient.get()
-                   .uri(matchInfoUrl)
-                   .header("X-Riot-Token", apiKey)
-                   .retrieve()
-                   .bodyToMono(String.class)
-                   .block();
-           JsonObject matchJSON = JsonParser.parseString(match).getAsJsonObject();
+            String match  = webClient.get()
+                    .uri(matchInfoUrl)
+                    .header("X-Riot-Token", apiKey)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+            JsonObject matchJSON = JsonParser.parseString(match).getAsJsonObject();
 
-           MatchAISenderDTO matchDTO = buildMatchDTO(jobId,playerPUUID,matchJSON, matchID);
+            MatchAISenderDTO matchDTO = buildMatchDTO(jobId,playerPUUID,matchJSON, matchID);
 
-           String ai_url = dotenv.get("AI_URL");
-           String URL = ai_url+"/analyze-match";
+            String ai_url = dotenv.get("AI_URL");
+            String URL = ai_url+"/analyze-match";
 
-           webClient.post()
-                   .uri(URL)
-                   .header(HttpHeaders.CONTENT_TYPE, "application/json")
-                   .bodyValue(matchDTO)
-                   .retrieve()
-                   .bodyToMono(Void.class)
-                   .doOnSuccess(v -> System.out.println("Request sent to AI microservice"))
-                   .doOnError(e -> System.out.println("Error calling AI microservice: \n"+e))
-                   .subscribe();
+            webClient.post()
+                    .uri(URL)
+                    .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                    .bodyValue(matchDTO)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .doOnSuccess(v -> System.out.println("Request sent to AI microservice"))
+                    .doOnError(e -> System.out.println("Error calling AI microservice: \n"+e))
+                    .subscribe();
 
-           ObjectMapper mapper = new ObjectMapper();
-           System.out.println(
-           "Sending to AI ms: \n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(matchDTO)
-           );
-           return  matchDTO;
+            webClient.patch()
+                    .uri("http://ms-core:8181/analysis/"+jobId+"/running")
+                    .subscribe();
+
+            ObjectMapper mapper = new ObjectMapper();
+            System.out.println(
+            "Sending to AI ms: \n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(matchDTO)
+            );
+            return  matchDTO;
        }catch(Exception e){
          if(e instanceof ResponseStatusException){
              throw e;

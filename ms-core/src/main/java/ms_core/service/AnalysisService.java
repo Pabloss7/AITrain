@@ -1,6 +1,7 @@
 package ms_core.service;
 
 import lombok.RequiredArgsConstructor;
+import ms_core.DTO.DataAnalysisRequest;
 import ms_core.models.Job;
 import ms_core.models.JobStatus.JobStatusEnum;
 import ms_core.repositories.AnalysisJobRepo;
@@ -14,7 +15,7 @@ import java.util.UUID;
 public class AnalysisService {
 
     private final AnalysisJobRepo repository;
-
+    private final DataService dataService;
     public Job createJob(String summonerName, String tagLine){
         Job job = Job.builder()
                 .jobId(UUID.randomUUID())
@@ -23,6 +24,13 @@ public class AnalysisService {
                 .status(JobStatusEnum.PENDING)
                 .createdAt(Instant.now())
                 .build();
+
+        DataAnalysisRequest body =  DataAnalysisRequest.builder()
+                .id(job.getJobId())
+                .summonerName(summonerName)
+                .tagLine(tagLine)
+                .build();
+        dataService.startAnalysis(body);
         return repository.save(job);
     }
 

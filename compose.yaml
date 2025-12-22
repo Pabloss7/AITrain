@@ -36,6 +36,19 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+  postgres-core:
+      image: postgres:16
+      container_name: postgres-ms-core
+      restart: unless-stopped
+      environment:
+        POSTGRES_DB: ms_core
+        POSTGRES_USER: core_user
+        POSTGRES_PASSWORD: core_password
+      ports:
+        - "5433:5432"
+      volumes:
+        - postgres_core_data:/var/lib/postgresql/data
 
 volumes:
   mongo_data:
+  postgres_core_data:
