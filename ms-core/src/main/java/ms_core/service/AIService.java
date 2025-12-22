@@ -15,6 +15,6 @@ public class AIService {
     }
 
     public JsonNode getReccoms(UUID jobId){
-        return restTemplate.getForObject("http://recommendations/"+jobId.toString(), JsonNode.class);
+        return restTemplate.getForObject("http://ms-ai:5000/recommendations/"+jobId.toString(), JsonNode.class);
     }
 }

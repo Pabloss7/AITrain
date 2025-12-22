@@ -16,7 +16,7 @@ from src.models.requestModels import MatchProcessRequest
 from src.processing.extract_metrics import extract_metrics, extract_metrics_player
 from src.processing.clean_data import clean_dataset
 from src.processing.normalize_data import normalize_data
-from src.db.mongo_client import insert_mongo_response
+from src.db.mongo_client import insert_mongo_response, get_mongo_recommendation
 
 
 app = FastAPI(
@@ -41,12 +41,12 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         }
     )
 
-async def notify_core(job_id: str,core_url: str):
-    payload = {"jobId": job_id, "status": "COMPLETED"}
-
+async def notify_core(job_id: str):
+    core_url = os.getenv("CORE_URL")
+    url= f"{core_url}/{job_id}/completed"
     async with httpx.AsyncClient() as client:
         try:
-            response: await client.post(core_url, json=payload)
+            response = await client.patch(url)
             response.raise_for_status()
             print("Core communication:", response.status_code)
         except httpx.HTTPError as e:
@@ -80,7 +80,7 @@ def analyze_match(match: MatchProcessRequest):
                     "recommendation": rec
                 })
         insert_mongo_response(match.jobId, recommendations)
-        #notify_core(match.jobId,"LA_URL_DEL_CORE")
+        notify_core(match.jobId)
         return {"message": "Match processed"}
     except Exception as e:
         traceback.print_exc()
@@ -88,6 +88,15 @@ def analyze_match(match: MatchProcessRequest):
             status_code=500,
             content={"message": "Error processing match", "error": str(e)}
         )    
+
+
+@app.get("/recommendations/{job_id}")
+async def get_recommendations(job_id: str, request: Request):
+    recomms = get_mongo_recommendation(job_id)
+    if recomms is None:
+        return {"error": "Job not found"}, 404
+    return recomms
+
 
 @app.post("/analyze-match-debug")
 async def debug_endpoint(request: Request):
