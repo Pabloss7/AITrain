@@ -3,7 +3,6 @@ package ms_core.models;
 import jakarta.persistence.*;
 import lombok.*;
 import ms_core.models.JobStatus.JobStatusEnum;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -21,6 +20,8 @@ public class Job {
 
     @Column(nullable = false)
     private String summonerName;
+    @Column(nullable = false)
+    private String tagLine;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
