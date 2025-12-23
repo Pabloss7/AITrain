@@ -54,7 +54,7 @@ async def notify_core(job_id: str):
 
 ### EDNPOINTS
 @app.post("/analyze-match", status_code=201)
-def analyze_match(match: MatchProcessRequest):
+async def analyze_match(match: MatchProcessRequest):
     try:
         metrics = extract_metrics_player(match.info,match.metadata, match.puuid)
 
@@ -79,8 +79,10 @@ def analyze_match(match: MatchProcessRequest):
                     "shap_value": shap_value,
                     "recommendation": rec
                 })
+        # NOTE: It's important to save in db before notifying core, so we avoid race conditions
+        # Persist first → avoid race condition
         insert_mongo_response(match.jobId, recommendations)
-        notify_core(match.jobId)
+        await notify_core(match.jobId)
         return {"message": "Match processed"}
     except Exception as e:
         traceback.print_exc()

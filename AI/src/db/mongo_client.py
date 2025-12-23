@@ -28,4 +28,8 @@ def get_mongo_recommendation(jobId):
     db = client[db_name]
     collection = db[collection_name]
 
-    return collection.find_one({"jobId": jobId})
+    document = collection.find_one({"jobId": jobId})
+    
+    if document:
+        document.pop("_id", None)
+    return document
