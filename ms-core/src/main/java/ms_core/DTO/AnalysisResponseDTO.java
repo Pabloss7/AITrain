@@ -8,6 +8,6 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 public class AnalysisResponseDTO {
-    private UUID id;
+    private UUID jobId;
     private JobStatusEnum status;
 }

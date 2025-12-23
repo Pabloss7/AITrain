@@ -23,7 +23,7 @@ public class AnalysisController {
 
     private final AnalysisService analysisService;
     private final AIService aiService;
-
+    //TODO: FIX OVERWRITTING BEFORE CREATING
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
     public AnalysisResponseDTO  createAnalysis(@Valid @RequestBody AnalysisRequestDTO request){
@@ -47,12 +47,14 @@ public class AnalysisController {
     @PatchMapping("/{jobId}/running")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void markJobAsRunning(@PathVariable("jobId") UUID jobId){
+        System.out.println("Marking job as running");
         analysisService.updateJob(jobId, JobStatusEnum.RUNNING);
     }
 
     @PatchMapping("/{jobId}/completed")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void markJobAsCompleted(@PathVariable("jobId") UUID jobId){
+        System.out.println("Marking job as completed");
         analysisService.updateJob(jobId, JobStatusEnum.COMPLETED);
     }
 

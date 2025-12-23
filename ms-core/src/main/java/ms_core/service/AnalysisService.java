@@ -26,12 +26,14 @@ public class AnalysisService {
                 .build();
 
         DataAnalysisRequest body =  DataAnalysisRequest.builder()
-                .id(job.getJobId())
+                .jobId(job.getJobId())
                 .summonerName(summonerName)
                 .tagLine(tagLine)
                 .build();
+        System.out.println("Sending job: \n"+job);
+        Job savedJob = repository.save(job);
         dataService.startAnalysis(body);
-        return repository.save(job);
+        return savedJob;
     }
 
     public Job getJob(UUID jobId){

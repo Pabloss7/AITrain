@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 public class DataAnalysisRequest {
-    private UUID id;
+    private UUID jobId;
     private String summonerName;
     private String tagLine;
 }

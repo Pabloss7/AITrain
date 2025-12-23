@@ -12,6 +12,6 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 public class JobStatusResponseDTO {
-    private UUID id;
+    private UUID jobId;
     private JobStatusEnum status;
 }

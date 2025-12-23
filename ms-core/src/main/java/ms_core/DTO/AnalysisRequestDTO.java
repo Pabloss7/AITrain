@@ -12,5 +12,5 @@ public class AnalysisRequestDTO {
     private String summonerName;
 
     @NotBlank
-    private String TagLine;
+    private String tagLine;
 }
