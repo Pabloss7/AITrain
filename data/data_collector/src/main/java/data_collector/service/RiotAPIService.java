@@ -75,13 +75,19 @@ public class RiotAPIService {
                     .subscribe();
 
             webClient.patch()
-                    .uri("http://ms-core:8181/analysis/"+jobId+"/running")
-                    .subscribe();
-
-            ObjectMapper mapper = new ObjectMapper();
-            System.out.println(
-            "Sending to AI ms: \n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(matchDTO)
-            );
+                .uri("http://ms-core:8181/analysis/{jobId}/running", jobId)
+                .retrieve()
+                .toBodilessEntity()
+                .doOnSuccess(res ->
+                    System.out.println("Job {} marked as RUNNING. Status "+ jobId+ res.getStatusCode())
+                )
+                .doOnError(err ->
+                    System.out.println("Error notifying core for job {}"+ jobId+ err)
+                )
+                .subscribe();            ObjectMapper mapper = new ObjectMapper();
+                        System.out.println(
+                        "Sending to AI ms: \n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(matchDTO)
+                        );
             return  matchDTO;
        }catch(Exception e){
          if(e instanceof ResponseStatusException){

@@ -15,6 +15,18 @@ services:
       - RIOT_MATCHES_URL=https://europe.api.riotgames.com/lol/match/v5/matches/
       - MONGO_URI=mongodb://mongo:27017
       - MONGO_DB=match_data
+  ms-core:
+    build: ./ms-core
+    container_name: ms-core
+    ports:
+      - "8181:8181"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-core:5432/ms_core
+      SPRING_DATASOURCE_USERNAME: core_user
+      SPRING_DATASOURCE_PASSWORD: core_password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - postgres-core
   
   ms-ai:
     build: ./ai
