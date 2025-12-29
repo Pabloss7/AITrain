@@ -19,7 +19,7 @@ x, y = matches.drop(columns=["win"]), matches["win"]
 x_train, x_test, y_train, y_test = train_test_split(
    x, y, test_size=0.2, random_state=42, stratify=y
    )
-
+x_train.to_parquet("data/x_train.parquet", index=False)
 
 model = XGBClassifier(
    objective="binary:logistic",

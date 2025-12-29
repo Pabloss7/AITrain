@@ -21,8 +21,9 @@ def main():
         
         
     df = clean_dataset(rows)
-    
-    df.to_parquet("data/matches_dataset.parquet", index=False)
+    print(df.head(1))
+    print(df.dtypes)
+    df.to_parquet("data/matches_dataset_extended.parquet", index=False)
 
 
 if __name__ == "__main__":

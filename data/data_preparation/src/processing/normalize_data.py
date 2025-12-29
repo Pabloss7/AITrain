@@ -2,55 +2,99 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import joblib
 
-df = pd.read_parquet("../../data/matches_dataset.parquet")
+# Load dataset
+df = pd.read_parquet("../../data/matches_dataset_extended.parquet")
 
-# Erase matches shorter tahn 5 minutes
+# ----------------------------
+# BASIC CLEANING
+# ----------------------------
+
+# Remove very short games (< 5 min)
 df = df[df.gameDuration > 300]
 
-#We make sure there is no troll players
+# Remove obvious trolls / corrupted data
 df = df[df.totalMinionsKilled > 10]
 df = df[df.goldEarned > 2000]
 
+# ----------------------------
+# CATEGORICAL ENCODING
+# ----------------------------
 
-# Add game duration in minutes
-df["minutesDuration"] = df.gameDuration/60
+# Drop champion name to avoid bias
+df = df.drop(columns=["championName"], errors="ignore")
+
+categorical_ohe = [
+    "teamPosition",
+    "individualPosition",
+    "lane",
+    "role",
+]
+
+df = pd.get_dummies(
+    df,
+    columns=[c for c in categorical_ohe if c in df.columns],
+    drop_first=False
+)
+
+# ----------------------------
+# TIME NORMALIZATION
+# ----------------------------
+
+# Game duration in minutes
+df["minutesDuration"] = df.gameDuration / 60
 df = df.drop(columns=["gameDuration"], errors="ignore")
 
-# Add cs farmed per minute in game
-df["CSMin"] = df.totalMinionsKilled/df.minutesDuration
-df = df.drop(columns=["totalMinionsKilled"], errors="ignore")
-
-# Add gold per minute
-df["goldMin"] = df.goldEarned/df.minutesDuration
-df = df.drop(columns=["goldEarned"], errors="ignore")
-
-#Add damage per minute
-df["dmgMin"] = df.totalDamageDealtToChampions/df.minutesDuration
-df = df.drop(columns=["totalDamageDealtToChampions"], errors="ignore")
-
-#Add vision score per minute
-df["visionMin"] = df.visionScore/df.minutesDuration
-df = df.drop(columns=["visionScore"], errors="ignore")
-df = df.drop(columns=["wardsPlaced"], errors="ignore")
-df = df.drop(columns=["wardsKilled"], errors="ignore")
-
-#Delete the columns that are not useful but we thoought they were
-#In case of championname and individual position we are droping the columns because they are
-# breaking shap, so we will be handling in other way than expected
-df = df.drop(columns=["firstBloodKill","championName","individualPosition"], errors="ignore")
-
-#Convert booleans into number
-df["win"] = df.win.astype(int)
+# Per-minute metrics
+df["dmgMin"] = df.totalDamageDealtToChampions / df.minutesDuration
 
 
+# Drop raw absolute metrics
+df = df.drop(
+    columns=[
+        "totalMinionsKilled",
+        "goldEarned",
+        "totalDamageDealtToChampions",
+        "visionScore",
+        "wardsPlaced",
+        "wardsKilled",
+    ],
+    errors="ignore"
+)
 
-# Now we apply normalization so the ML algorithm can learn better and faster
+# ----------------------------
+# BOOLEAN / BINARY FEATURES
+# ----------------------------
+
+bool_columns = df.select_dtypes(include="bool").columns
+df[bool_columns] = df[bool_columns].astype(int)
+
+
+# ----------------------------
+# NUMERICAL SCALING
+# ----------------------------
+
+# Only scale continuous numerical features
+scalable_features = [
+    "goldPerMinute",
+    "dmgMin",
+    "visionScorePerMinute",
+    "csPerMinute",
+]
+
 scaler = StandardScaler()
-columns = ["goldMin", "dmgMin", "visionMin", "CSMin"]
-df[columns] = scaler.fit_transform(df[columns])
+df[scalable_features] = scaler.fit_transform(df[scalable_features])
+
+# Save scaler for inference
 joblib.dump(scaler, "../../data/standard_scaler.joblib")
 
+# ----------------------------
+# FINAL DATASET
+# ----------------------------
+print(df.head(1))
 print(df.dtypes)
-
 df = df.reset_index(drop=True)
 df.to_parquet("../../data/matches_clean_dataset.parquet", index=False)
+
+print("Dataset ready ✅")
+print(df.dtypes)
+print(df.columns.tolist())

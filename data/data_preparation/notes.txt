@@ -1,0 +1,89 @@
+pre normalización:
+Documentos en la colección: 9992
+   gameDuration  teamId   win championName  ... firstTowerAssist csPerMinute goldPerMinute visionScorePerMinute
+0          1795     100  True          Jax  ...            False    5.816156    463.688022             0.635097    
+
+[1 rows x 51 columns]
+gameDuration                        int64
+teamId                              int64
+win                                  bool
+championName                       object
+individualPosition                 object
+teamPosition                       object
+lane                               object
+role                               object
+kills                               int64
+deaths                              int64
+assists                             int64
+doubleKills                         int64
+tripleKills                         int64
+quadraKills                         int64
+pentaKills                          int64
+largestKillingSpree                 int64
+largestMultiKill                    int64
+totalDamageDealtToChampions         int64
+physicalDamageDealtToChampions      int64
+magicDamageDealtToChampions         int64
+trueDamageDealtToChampions          int64
+totalDamageTaken                    int64
+damageSelfMitigated                 int64
+totalHeal                           int64
+totalHealsOnTeammates               int64
+totalTimeCCDealt                    int64
+timeCCingOthers                     int64
+goldEarned                          int64
+goldSpent                           int64
+totalMinionsKilled                  int64
+neutralMinionsKilled                int64
+totalAllyJungleMinionsKilled        int64
+totalEnemyJungleMinionsKilled       int64
+visionScore                         int64
+wardsPlaced                         int64
+wardsKilled                         int64
+damageDealtToObjectives             int64
+damageDealtToBuildings              int64
+turretKills                         int64
+inhibitorKills                      int64
+dragonKills                         int64
+baronKills                          int64
+objectivesStolen                    int64
+objectivesStolenAssists             int64
+firstBloodKill                       bool
+firstBloodAssist                     bool
+firstTowerKill                       bool
+firstTowerAssist                     bool
+csPerMinute                       float64
+goldPerMinute                     float64
+visionScorePerMinute              float64
+dtype: object
+
+POST NORMALIZACIÓN:
+   teamId  win  kills  deaths  assists  ...  minutesDuration     CSMin   goldMin    dmgMin  visionMin
+0     100    1      8       4        6  ...        29.916667  0.695225  0.895815  0.120389  -0.299492
+
+[1 rows x 66 columns]
+teamId               int64
+win                  int64
+kills                int64
+deaths               int64
+assists              int64
+                    ...
+minutesDuration    float64
+CSMin              float64
+goldMin            float64
+dmgMin             float64
+visionMin          float64
+Length: 66, dtype: object
+Dataset ready ✅
+teamId               int64
+win                  int64
+kills                int64
+deaths               int64
+assists              int64
+                    ...
+minutesDuration    float64
+CSMin              float64
+goldMin            float64
+dmgMin             float64
+visionMin          float64
+Length: 66, dtype: object

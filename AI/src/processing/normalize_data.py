@@ -7,49 +7,96 @@ def base_path():
     return os.path.dirname(os.path.dirname((__file__)))
 
 def normalize_data(df):
-    # Erase matches shorter tahn 5 minutes
+    # ----------------------------
+    # BASIC CLEANING
+    # ----------------------------
+
+    # Remove very short games (< 5 min)
     df = df[df.gameDuration > 300]
 
-    #We make sure there is no troll players
+    # Remove obvious trolls / corrupted data
     df = df[df.totalMinionsKilled > 10]
     df = df[df.goldEarned > 2000]
 
-    # Add game duration in minutes
-    df["minutesDuration"] = df.gameDuration/60
+    # ----------------------------
+    # CATEGORICAL ENCODING
+    # ----------------------------
+
+    # Drop champion name to avoid bias
+    df = df.drop(columns=["championName"], errors="ignore")
+
+    categorical_ohe = [
+        "teamPosition",
+        "individualPosition",
+        "lane",
+        "role",
+    ]
+
+    df = pd.get_dummies(
+        df,
+        columns=[c for c in categorical_ohe if c in df.columns],
+        drop_first=False
+    )
+
+    # ----------------------------
+    # TIME NORMALIZATION
+    # ----------------------------
+
+    # Game duration in minutes
+    df["minutesDuration"] = df.gameDuration / 60
     df = df.drop(columns=["gameDuration"], errors="ignore")
 
-    # Add cs farmed per minute in game
-    df["CSMin"] = df.totalMinionsKilled/df.minutesDuration
-    df = df.drop(columns=["totalMinionsKilled"], errors="ignore")
+    # Per-minute metrics
+    df["dmgMin"] = df.totalDamageDealtToChampions / df.minutesDuration
 
-    # Add gold per minute
-    df["goldMin"] = df.goldEarned/df.minutesDuration
-    df = df.drop(columns=["goldEarned"], errors="ignore")
+    # Drop raw absolute metrics
+    df = df.drop(
+        columns=[
+            "totalMinionsKilled",
+            "goldEarned",
+            "totalDamageDealtToChampions",
+            "visionScore",
+            "wardsPlaced",
+            "wardsKilled",
+        ],
+        errors="ignore"
+    )
 
-    #Add damage per minute
-    df["dmgMin"] = df.totalDamageDealtToChampions/df.minutesDuration
-    df = df.drop(columns=["totalDamageDealtToChampions"], errors="ignore")
+    # ----------------------------
+    # BOOLEAN / BINARY FEATURES
+    # ----------------------------
 
-    #Add vision score per minute
-    df["visionMin"] = df.visionScore/df.minutesDuration
-    df = df.drop(columns=["visionScore"], errors="ignore")
-    df = df.drop(columns=["wardsPlaced"], errors="ignore")
-    df = df.drop(columns=["wardsKilled"], errors="ignore")
+    bool_columns = df.select_dtypes(include="bool").columns
+    df[bool_columns] = df[bool_columns].astype(int)
 
-    #Delete the columns that are not useful but we thoought they were
-    df = df.drop(columns=["firstBloodKill", "championName", "individualPosition"], errors="ignore")
 
-    #Convert booleans into number
-    df["win"] = df.win.astype(int)
+    # ----------------------------
+    # NUMERICAL SCALING
+    # ----------------------------
+
 
     # Now we apply normalization so the ML algorithm can learn better and faster
     path = os.path.join(base_path(),"models", "standard_scaler.joblib")
-    #TODO: ELIMINAR LAS COLUMNAS CATEGORICAS
     scaler = joblib.load(path)
-    columns = ["goldMin", "dmgMin", "visionMin", "CSMin"]
-    df[columns] = scaler.transform(df[columns])
+    print("Values before scaling:\n",df["dmgMin"],df["goldPerMinute"],df["visionScorePerMinute"],df["csPerMinute"])
+    # Only scale continuous numerical features
+    scalable_features = [
+        "goldPerMinute",
+        "dmgMin",
+        "visionScorePerMinute",
+        "csPerMinute",
+    ]
+    df[scalable_features] = scaler.transform(df[scalable_features])
 
-    print("Dataset from player: \n",df)
+    print("Values after scaling:\n",df["dmgMin"],df["goldPerMinute"],df["visionScorePerMinute"],df["csPerMinute"])
+    print("Means:", scaler.mean_)
+    print("Stds:", scaler.scale_)
 
+    # ----------------------------
+    # FINAL DATASET
+    # ----------------------------
+    print("Normalized data:\n",df.head(1))
+    print(df.dtypes)
     df = df.reset_index(drop=True)
+
     return df
