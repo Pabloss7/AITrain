@@ -75,10 +75,57 @@ df[bool_columns] = df[bool_columns].astype(int)
 
 # Only scale continuous numerical features
 scalable_features = [
-    "goldPerMinute",
-    "dmgMin",
+  # Combat
+    "kills","deaths","assists",
+    "doubleKills","tripleKills","quadraKills","pentaKills",
+    "largestKillingSpree","largestMultiKill",
+
+    # Damage
+    "physicalDamageDealtToChampions",
+    "magicDamageDealtToChampions",
+    "trueDamageDealtToChampions",
+    "damageDealtToObjectives",
+    "damageDealtToBuildings",
+    "totalDamageTaken",
+    "damageSelfMitigated",
+
+    # Healing & CC
+    "totalHeal","totalHealsOnTeammates",
+    "totalTimeCCDealt","timeCCingOthers",
+
+    # Economy & farm
+    "goldSpent","goldPerMinute",
+    "neutralMinionsKilled",
+    "totalAllyJungleMinionsKilled",
+    "totalEnemyJungleMinionsKilled",
+    "csPerMinute","CSMin",
+
+    # Vision
     "visionScorePerMinute",
-    "csPerMinute",
+
+    # Objectives
+    "turretKills","inhibitorKills",
+    "dragonKills","baronKills",
+    "objectivesStolen","objectivesStolenAssists",
+
+    # Early game
+    "firstBloodKill","firstBloodAssist",
+    "firstTowerKill","firstTowerAssist",
+
+    # Roles / positions (one-hot)
+    "teamPosition_BOTTOM","teamPosition_JUNGLE","teamPosition_MIDDLE",
+    "teamPosition_TOP","teamPosition_UTILITY",
+
+    "individualPosition_BOTTOM","individualPosition_JUNGLE",
+    "individualPosition_MIDDLE","individualPosition_TOP",
+    "individualPosition_UTILITY",
+
+    "lane_BOTTOM","lane_JUNGLE","lane_MIDDLE","lane_TOP",
+
+    "role_CARRY","role_SOLO","role_SUPPORT",
+
+    # Game length
+    "minutesDuration","dmgMin"
 ]
 
 scaler = StandardScaler()
