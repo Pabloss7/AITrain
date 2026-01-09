@@ -98,7 +98,7 @@ scalable_features = [
     "neutralMinionsKilled",
     "totalAllyJungleMinionsKilled",
     "totalEnemyJungleMinionsKilled",
-    "csPerMinute","CSMin",
+    "csPerMinute",
 
     # Vision
     "visionScorePerMinute",
@@ -108,13 +108,6 @@ scalable_features = [
     "dragonKills","baronKills",
     "objectivesStolen","objectivesStolenAssists",
 
-    # Early game
-    "firstBloodKill","firstBloodAssist",
-    "firstTowerKill","firstTowerAssist",
-
-    # Roles / positions (one-hot)
-    "teamPosition_BOTTOM","teamPosition_JUNGLE","teamPosition_MIDDLE",
-    "teamPosition_TOP","teamPosition_UTILITY",
 
     "individualPosition_BOTTOM","individualPosition_JUNGLE",
     "individualPosition_MIDDLE","individualPosition_TOP",

@@ -31,7 +31,7 @@ features = [
     "neutralMinionsKilled",
     "totalAllyJungleMinionsKilled",
     "totalEnemyJungleMinionsKilled",
-    "csPerMinute","CSMin",
+    "csPerMinute",
 
     # Vision
     "visionScorePerMinute",
@@ -64,13 +64,10 @@ features = [
 X = df[features]
 y = df["win"]
 
-# Escalado
-scaler = joblib.load("../models/standard_scaler_all_features.joblib")
-X_scaled = scaler.transform(X)
 
 # PCA en 2D
 pca = PCA(n_components=2)
-X_reduced = pca.fit_transform(X_scaled)
+X_reduced = pca.fit_transform(X)
 
 # Plot 2D
 plt.figure(figsize=(8,6))
@@ -94,7 +91,7 @@ legend = plt.legend(
 plt.gca().add_artist(legend)
 
 plt.tight_layout()
-plt.savefig("../figures/pca_2d_all_features.png", dpi=300)
+plt.savefig("../figures/pca_2d_all_features_2.png", dpi=300)
 plt.close()
 
 # Varianza
@@ -107,4 +104,4 @@ loadings = pd.DataFrame(
     index=["PC1","PC2"]
 )
 
-print(loadings.T.sort_values("PC1", ascending=False).head(10))
+print(loadings.T.sort_values("PC1", ascending=False))
