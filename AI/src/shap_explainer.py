@@ -40,7 +40,6 @@ def load_explainer():
         )
     return explainer, feature_columns
 
-#TODO: ARREGLAR EL PROBLEMA DE LAS COLUMNAS DE SHAP
 def explain_match(single_match_features):
     explainer, feature_columns = load_explainer()
     X = single_match_features.to_numpy(dtype=np.float64)

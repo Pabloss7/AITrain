@@ -120,7 +120,7 @@ scalable_features = [
     # Game length
     "minutesDuration","dmgMin"
 ]
-
+#TODO: scale only the necessaty features
 scaler = StandardScaler()
 df[scalable_features] = scaler.fit_transform(df[scalable_features])
 
