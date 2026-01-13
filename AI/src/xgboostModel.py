@@ -4,6 +4,7 @@ from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, roc_auc_score, classification_report
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GridSearchCV
 import os
 import joblib
 
@@ -21,42 +22,49 @@ x_train, x_test, y_train, y_test = train_test_split(
    )
 x_train.to_parquet("data/x_train.parquet", index=False)
 
-model = XGBClassifier(
+xgb = XGBClassifier(
    objective="binary:logistic",
    tree_method="hist",
    eval_metric="auc",
-   n_estimators=2000,
-   early_stopping_rounds=100
+   random_state=42
 )
 
-model.fit(
-   x_train,
-   y_train,
-   eval_set=[(x_test, y_test)],
-   verbose=100
+param_grid = {
+   "max_depth": [3,5,7],
+   "learning_rate": [0.01,0.05,0.1],
+   "n_estimators": [300,600,1000],
+   "subsample": [0.8,1.0],
+   "colsample_bytree": [0.8,1.0]
+}
+
+grid = GridSearchCV(
+   estimator=xgb,
+   param_grid=param_grid,
+   scoring="roc_auc",      # metric
+   cv=5,                   # 5-fold cross-validation
+   verbose=2,
+   n_jobs=-1               #cores
 )
+grid.fit(x_train, y_train)
+
+best_model = grid.best_estimator_
+
+print("Best parameters found:")
+print(grid.best_params_)
+
+print(f"Best CV AUC: {grid.best_score_:.4f}")
+
+
 os.makedirs("models",exist_ok=True)
-model.save_model("models/xgboost_model.bin")
+joblib.dump(best_model, "models/xgboost_model_tuned.joblib")
 
 
-probs = model.predict_proba(x_test)[:,1]
+probs = best_model.predict_proba(x_test)[:,1]
 preds = (probs >= 0.5).astype(int)
 
 acc = accuracy_score(y_test, preds)
 auc = roc_auc_score(y_test, probs)
+
 print(f"Accuracy of the base model: {acc:.3f}")
 print(f"AUC of the base model: {auc:.3f}")
 print("\nClassification report:\n", classification_report(y_test, preds))
-
-
-#rmse = mean_squared_error(y_test, preds, squared=False)
-#print(f"RMSE of the base model: {rmse:.3f}")
-#results = xgb.cv(
-#   params,dtrain_reg,
-#   num_boost_round=n,
-#   nfold=5,
-#   early_stopping_rounds=20
-#)
-#print(results.head())
-#best_rmse = results['test-rmse-mean'].min()
-#print(f"Best RMSE: {best_rmse:.3f}")
