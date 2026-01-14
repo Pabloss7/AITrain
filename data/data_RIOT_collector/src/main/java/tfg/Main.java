@@ -23,18 +23,28 @@ public class Main {
                     MONGO_DB
             );
             RiotApiClient client = new RiotApiClient(apikey, db);
-            String summonerName = "xxkattaa";
-            String tagLine = "KOI";
+            String[] summonerNames = {
+                    "xxkattaa",
+                    "Gembo02"
+            };
+            String[] tagLines = {
+                    "KOI",
+                    "EUW",
+            };
 
-            String summonerJSON = client.getAccount(
-                    accountURI + summonerName + "/" + tagLine
-            );
+            for(int i = 0; i <= summonerNames.length;i++){
+                System.out.println("STARTING PLAYER: "+summonerNames[i] + tagLines[i]);
+                String summonerJSON = client.getAccount(
+                        accountURI + summonerNames[i] + "/" + tagLines[i]
+                );
 
-            JsonObject obj = JsonParser.parseString(summonerJSON).getAsJsonObject();
-            String puuid = obj.get("puuid").getAsString();
+                JsonObject obj = JsonParser.parseString(summonerJSON).getAsJsonObject();
+                String puuid = obj.get("puuid").getAsString();
 
 
-            client.startCollectionOfData(puuid,matchesURI);
+                client.startCollectionOfData(puuid,matchesURI);
+            }
+
 
 
         } catch (Exception e) {
