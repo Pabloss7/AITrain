@@ -12,8 +12,8 @@ feature_columns = None
 def base_path():
     return os.path.dirname(__file__)
 
-def load_matches():
-    path = os.path.join(base_path(), "data", "matches_clean_dataset.parquet")
+def load_matrix():
+    path = os.path.join(base_path(), "data", "x_train.parquet")
     return pd.read_parquet(path)
 
 def load_explainer():
@@ -22,9 +22,7 @@ def load_explainer():
     if explainer is not None:
         return explainer, feature_columns
     
-    matches = load_matches()
-
-    X = matches.drop(columns=["win"])
+    X = load_matrix()
 
     background = shap.sample(X, 100).to_numpy(dtype=np.float64)
 

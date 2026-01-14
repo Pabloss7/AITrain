@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: ms-core
+
+  datasource:
+    url: jdbc:postgresql://postgres-core:5432/ms_core
+    username: core_user
+    password: core_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+services:
+  data:
+    url: http://ms-data-collector:8080/data-collector
+server:
+  port: 8181

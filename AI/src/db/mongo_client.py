@@ -18,3 +18,18 @@ def insert_mongo_response(jobId, response):
         "status": "completed",
         "recommendations": response
     })
+
+def get_mongo_recommendation(jobId):
+    uri = os.getenv("MONGO_URI")
+    db_name = os.getenv("MONGO_DB")
+    collection_name = os.getenv("MONGO_RECOMS_COLLECTION")
+
+    client = MongoClient(uri)
+    db = client[db_name]
+    collection = db[collection_name]
+
+    document = collection.find_one({"jobId": jobId})
+    
+    if document:
+        document.pop("_id", None)
+    return document
