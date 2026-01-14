@@ -25,6 +25,7 @@ x_train.to_parquet("data/x_train.parquet", index=False)
 xgb = XGBClassifier(
    objective="binary:logistic",
    tree_method="hist",
+   device="cuda",
    eval_metric="auc",
    random_state=42
 )
