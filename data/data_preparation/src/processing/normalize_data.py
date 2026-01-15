@@ -108,15 +108,6 @@ scalable_features = [
     "dragonKills","baronKills",
     "objectivesStolen","objectivesStolenAssists",
 
-
-    "individualPosition_BOTTOM","individualPosition_JUNGLE",
-    "individualPosition_MIDDLE","individualPosition_TOP",
-    "individualPosition_UTILITY",
-
-    "lane_BOTTOM","lane_JUNGLE","lane_MIDDLE","lane_TOP",
-
-    "role_CARRY","role_SOLO","role_SUPPORT",
-
     # Game length
     "minutesDuration","dmgMin"
 ]

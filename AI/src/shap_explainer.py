@@ -1,10 +1,10 @@
 import pandas as pd
 import shap 
-from xgboost import XGBClassifier
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import json
+import joblib
+import traceback
 
 explainer = None
 feature_columns = None
@@ -17,38 +17,41 @@ def load_matrix():
     return pd.read_parquet(path)
 
 def load_explainer():
-    global explainer, feature_columns
+    try:
+        global explainer, feature_columns
 
-    if explainer is not None:
+        if explainer is not None:
+            return explainer, feature_columns
+        
+        X = load_matrix()
+
+        background = shap.sample(X, 100).to_numpy(dtype=np.float64)
+
+        model_path = os.path.join(base_path(), "models", "xgboost_model_tuned.joblib")
+
+        model = joblib.load(model_path)
+        booster = model.get_booster()
+        feature_columns = X.columns.tolist()
+
+        explainer = shap.TreeExplainer(
+            booster,
+            data=background,
+            feature_perturbation="interventional"
+            )
         return explainer, feature_columns
-    
-    X = load_matrix()
+    except Exception as e:
+        traceback.print_exc()
 
-    background = shap.sample(X, 100).to_numpy(dtype=np.float64)
-
-    model_path = os.path.join(base_path(), "models", "xgboost_model.bin")
-
-    model = XGBClassifier()
-    model.load_model(model_path)
-    booster = model.get_booster()
-    feature_columns = X.columns.tolist()
-
-    explainer = shap.TreeExplainer(
-        booster,
-        data=background,
-        feature_perturbation="interventional"
-        )
-    return explainer, feature_columns
 
 def explain_match(single_match_features):
     explainer, feature_columns = load_explainer()
     X = single_match_features.to_numpy(dtype=np.float64)
-
+   
     shap_values = explainer.shap_values(
         X,
         check_additivity=False
     )[0]
-    
+    print("Shap values obtained")
     sorted_idx = np.argsort(np.abs(shap_values))[::-1][:5]
 
     top_features = [

@@ -65,7 +65,7 @@ async def analyze_match(match: MatchProcessRequest):
         df_processed = preprocess_player_match(df, columns)
         
         print("Data processed")
-        df_processed = df_processed.astype(np.float64)
+        #df_processed = df_processed.astype(np.float64)
         top_features = explain_match(df_processed)
         print("Explainer processed")
         
