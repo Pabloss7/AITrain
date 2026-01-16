@@ -17,7 +17,7 @@ from src.processing.extract_metrics import extract_metrics, extract_metrics_play
 from src.processing.clean_data import clean_dataset
 from src.processing.normalize_data import normalize_data
 from src.db.mongo_client import insert_mongo_response, get_mongo_recommendation
-
+from src.utils.data_conversor import to_python_type
 
 app = FastAPI(
     title="Match AI recommendation system",
@@ -75,8 +75,8 @@ async def analyze_match(match: MatchProcessRequest):
             if rec:
                 recommendations.append({
                     "feature": feature,
-                    "value": value,
-                    "shap_value": shap_value,
+                    "value": to_python_type(value),
+                    "shap_value": to_python_type(shap_value),
                     "recommendation": rec
                 })
         # NOTE: It's important to save in db before notifying core, so we avoid race conditions

@@ -3,8 +3,8 @@ import shap
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import joblib
 import traceback
+from xgboost import Booster
 
 explainer = None
 feature_columns = None
@@ -27,10 +27,10 @@ def load_explainer():
 
         background = shap.sample(X, 100).to_numpy(dtype=np.float64)
 
-        model_path = os.path.join(base_path(), "models", "xgboost_model_tuned.joblib")
+        model_path = os.path.join(base_path(), "models", "xgboost_model.json")
 
-        model = joblib.load(model_path)
-        booster = model.get_booster()
+        booster = Booster()
+        booster.load_model(model_path)
         feature_columns = X.columns.tolist()
 
         explainer = shap.TreeExplainer(
