@@ -3,7 +3,6 @@ import warnings
 from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, roc_auc_score, classification_report
-from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
 import os
 import joblib
@@ -50,6 +49,7 @@ grid.fit(x_train, y_train)
 
 best_model = grid.best_estimator_
 
+
 print("Best parameters found:")
 print(grid.best_params_)
 
@@ -58,7 +58,7 @@ print(f"Best CV AUC: {grid.best_score_:.4f}")
 
 os.makedirs("models",exist_ok=True)
 joblib.dump(best_model, "models/xgboost_model_tuned.joblib")
-
+best_model.get_booster().save_model("models/xgboost_model.json")
 
 probs = best_model.predict_proba(x_test)[:,1]
 preds = (probs >= 0.5).astype(int)
