@@ -41,7 +41,7 @@ def load_explainer():
         return explainer, feature_columns
     except Exception as e:
         traceback.print_exc()
-
+        raise e
 
 def explain_match(single_match_features):
     explainer, feature_columns = load_explainer()
