@@ -46,7 +46,7 @@ def load_explainer():
 def explain_match(single_match_features):
     explainer, feature_columns = load_explainer()
     X = single_match_features.to_numpy(dtype=np.float64)
-   
+    role = X[""]
     shap_values = explainer.shap_values(
         X,
         check_additivity=False
