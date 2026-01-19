@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 
 from src.shap_explainer import explain_match
-from src.recommendations import generate_recommendation
+from src.recommendations import build_prompt_with_messages
 from src.preprocessing import preprocess_player_match
 from src.models.requestModels import MatchProcessRequest
 from src.processing.extract_metrics import extract_metrics, extract_metrics_player
@@ -70,14 +70,7 @@ async def analyze_match(match: MatchProcessRequest):
         print("Explainer processed")
         #TODO: fix how we handle recommendations in order to create the prompt for gemma 3
         recommendations = top_features
-        prompt = {
-            "Player to be analyzed:"
-        } 
-
-        
-
-
-        #TODO: call recommendation method once in order to get the prompt
+        prompt = build_prompt_with_messages(role,top_features)
         
         #     rec = generate_recommendation(feature, value, shap_value)
         #     if rec:
@@ -94,7 +87,7 @@ async def analyze_match(match: MatchProcessRequest):
         # Persist first → avoid race condition
 
         #TODO: modify db(?)
-        insert_mongo_response(match.jobId, recommendations)
+        insert_mongo_response(match.jobId, prompt)
         await notify_core(match.jobId)
         return {"message": "Match processed"}
     except Exception as e:

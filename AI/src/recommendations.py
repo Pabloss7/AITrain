@@ -2,7 +2,7 @@ from src.models.game_aspects import ASPECTS
 
 def build_prompt_with_messages(role, top_features):
     if not top_features:
-        return f"{player_name} ({role}): No negative aspects detected for this game."
+        return f" Player({role}): No negative aspects detected for this game."
 
     aspects_seen = set()
     aspect_list = []
@@ -10,9 +10,7 @@ def build_prompt_with_messages(role, top_features):
     for feature, value, shap_value, aspect in top_features:
         if aspect not in aspects_seen:
             aspects_seen.add(aspect)
-            # Obtener mensaje predefinido
             message = ASPECTS.get(aspect, f"There's no predefined message for aspect: {aspect}.")
-            # Añadir feature, valor y SHAP al mensaje
             aspect_list.append(
                 f"- {aspect.replace('_', ' ').capitalize()} ({feature}): {message} "
                 f"(value: {value}, SHAP impact: {shap_value:.3f})"
