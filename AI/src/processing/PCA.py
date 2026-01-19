@@ -6,7 +6,7 @@ from sklearn.decomposition import PCA
 
 
 df = pd.read_parquet("../data/matches_clean_dataset.parquet")
-# TODO: fix standard scaler for all features(?)
+
 features = [
     # Combat
     "kills","deaths","assists",

@@ -1,40 +1,68 @@
 ROLE_FEATURE_MAP = {
 
     "JUNGLE": {
-        "deaths": "risk_management",
-        "visionMin": "map_control",
-        "assists": "map_impact",
-        "kills": "map_impact",
-        "csPerMinute": "resource_efficiency",
+        "dragonKills": "objective_pressure",
+        "baronKills": "objective_pressure",
+        "objectivesStolen": "objective_pressure",
+
+        "visionScorePerMinute": "vision_control",
+
+        "totalTimeCCDealt": "utility_control",
+        "timeCCingOthers": "utility_control",
+
+        "kills": "combat_efficiency",
+        "deaths": "survivability",
+
+        "goldPerMinute": "lane_scaling"
     },
 
     "ADC": {
-        "deaths": "positioning",
-        "csPerMinute": "scaling",
-        "goldMin": "scaling",
-        "physicalDamageDealtToChampions": "teamfight_damage",
-        "assists": "teamfight_presence",
+        "kills": "combat_efficiency",
+        "deaths": "survivability",
+
+        "csPerMinute": "lane_scaling",
+        "goldPerMinute": "lane_scaling",
+
+        "damageDealtToObjectives": "objective_pressure",
+        "turretKills": "objective_pressure"
     },
 
-    "SUPPORT": {
-        "visionMin": "vision_control",
-        "assists": "teamfight_presence",
-        "totalTimeCCDealt": "utility",
-        "deaths": "positioning",
+    "UTILITY": {
+        "visionScorePerMinute": "vision_control",
+
+        "totalTimeCCDealt": "utility_control",
+        "timeCCingOthers": "utility_control",
+
+        "assists": "combat_efficiency",
+        "deaths": "survivability",
+
+        "totalDamageTaken": "frontline_value"
     },
 
     "MID": {
-        "kills": "pressure",
-        "assists": "pressure",
-        "visionMin": "map_control",
-        "magicDamageDealtToChampions": "damage_output",
-        "deaths": "risk_management",
+        "kills": "combat_efficiency",
+        "assists": "combat_efficiency",
+
+        "csPerMinute": "lane_scaling",
+        "goldPerMinute": "lane_scaling",
+
+        "deaths": "survivability",
+
+        "turretKills": "objective_pressure"
     },
 
-    "TOP": {
-        "deaths": "lane_survival",
-        "csPerMinute": "lane_scaling",
-        "damageSelfMitigated": "frontline_value",
+    "TOP":{    
         "totalDamageTaken": "frontline_value",
+        "damageSelfMitigated": "frontline_value",
+        "totalHeal": "survivability",
+
+        "csPerMinute": "lane_scaling",
+        "goldPerMinute": "lane_scaling",
+
+        "kills": "combat_efficiency",
+        "deaths": "survivability",
+
+        "turretKills": "objective_pressure",
+        "inhibitorKills": "objective_pressure"
     }
 }

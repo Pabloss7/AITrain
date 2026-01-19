@@ -69,16 +69,23 @@ async def analyze_match(match: MatchProcessRequest):
         top_features = explain_match(df_processed,role)
         print("Explainer processed")
         #TODO: fix how we handle recommendations in order to create the prompt for gemma 3
-        recommendations = []
-        for feature, value, shap_value, aspect in top_features:
-            rec = generate_recommendation(feature, value, shap_value)
-            if rec:
-                recommendations.append({
-                    "feature": feature,
-                    "value": to_python_type(value),
-                    "shap_value": to_python_type(shap_value),
-                    "recommendation": rec
-                })
+        recommendations = top_features
+        prompt = {
+            "Player to be analyzed:"
+        } 
+
+        
+
+        #TODO: here we will be calling the gemma 3 ms for the recommendation
+        # for feature, value, shap_value, aspect in top_features:
+        #     rec = generate_recommendation(feature, value, shap_value)
+        #     if rec:
+        #         recommendations.append({
+        #             "feature": feature,
+        #             "value": to_python_type(value),
+        #             "shap_value": to_python_type(shap_value),
+        #             "recommendation": rec
+        #         })
         # NOTE: It's important to save in db before notifying core, so we avoid race conditions
         # Persist first → avoid race condition
         insert_mongo_response(match.jobId, recommendations)
