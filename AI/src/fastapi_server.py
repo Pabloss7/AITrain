@@ -76,8 +76,9 @@ async def analyze_match(match: MatchProcessRequest):
 
         
 
-        #TODO: here we will be calling the gemma 3 ms for the recommendation
-        # for feature, value, shap_value, aspect in top_features:
+
+        #TODO: call recommendation method once in order to get the prompt
+        
         #     rec = generate_recommendation(feature, value, shap_value)
         #     if rec:
         #         recommendations.append({
@@ -86,8 +87,13 @@ async def analyze_match(match: MatchProcessRequest):
         #             "shap_value": to_python_type(shap_value),
         #             "recommendation": rec
         #         })
+        #TODO: CALL GEMMA 3 ms 
+
+
         # NOTE: It's important to save in db before notifying core, so we avoid race conditions
         # Persist first → avoid race condition
+
+        #TODO: modify db(?)
         insert_mongo_response(match.jobId, recommendations)
         await notify_core(match.jobId)
         return {"message": "Match processed"}
