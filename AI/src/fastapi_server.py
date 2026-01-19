@@ -56,7 +56,7 @@ async def notify_core(job_id: str):
 @app.post("/analyze-match", status_code=201)
 async def analyze_match(match: MatchProcessRequest):
     try:
-        metrics = extract_metrics_player(match.info,match.metadata, match.puuid)
+        metrics, role = extract_metrics_player(match.info,match.metadata, match.puuid)
 
         df = clean_dataset(metrics)
         df = normalize_data(df)
@@ -66,11 +66,11 @@ async def analyze_match(match: MatchProcessRequest):
         
         print("Data processed")
         #df_processed = df_processed.astype(np.float64)
-        top_features = explain_match(df_processed)
+        top_features = explain_match(df_processed,role)
         print("Explainer processed")
-        
+        #TODO: fix how we handle recommendations in order to create the prompt for gemma 3
         recommendations = []
-        for feature, value, shap_value in top_features:
+        for feature, value, shap_value, aspect in top_features:
             rec = generate_recommendation(feature, value, shap_value)
             if rec:
                 recommendations.append({

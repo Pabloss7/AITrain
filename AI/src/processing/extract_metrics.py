@@ -96,5 +96,4 @@ def extract_metrics_player(info,metadata, puuid):
         "visionScorePerMinute": player.visionScore / (game_duration / 60),
     }
     
-    print("Metrics from player:\n",row)
-    return row
+    return row, row["individualPosition"]

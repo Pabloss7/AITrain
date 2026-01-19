@@ -5,6 +5,7 @@ import numpy as np
 import os
 import traceback
 from xgboost import Booster
+from src.models.role_feature_map import ROLE_FEATURE_MAP
 
 explainer = None
 feature_columns = None
@@ -43,24 +44,64 @@ def load_explainer():
         traceback.print_exc()
         raise e
 
-def explain_match(single_match_features):
+def explain_match(single_match_features, role, max_features=3, epsilon=0.01):
     explainer, feature_columns = load_explainer()
+    
+   
+    single_match_features = single_match_features.reindex(
+        columns=feature_columns,
+        fill_value=0
+    )
+    assert single_match_features.shape[1] == len(feature_columns)
     X = single_match_features.to_numpy(dtype=np.float64)
-    role = X[""]
+    
+
     shap_values = explainer.shap_values(
         X,
         check_additivity=False
     )[0]
-    print("Shap values obtained")
-    sorted_idx = np.argsort(np.abs(shap_values))[::-1][:5]
 
-    top_features = [
-        (
-            feature_columns[i],
-            single_match_features.iloc[0, i],
-            shap_values[i]
+    selected = []
+    used_aspects = set()
+
+    sorted_idx = np.argsort(np.abs(shap_values))[::-1]
+    print("shap values:", sorted_idx)
+    print("columns: ", feature_columns)
+    for i in sorted_idx:
+        
+        shap_val = shap_values[i]
+        print("Shap value:", shap_val)
+        feature = feature_columns[i]
+        print("Feat column value:", feature)
+        #solo impacto negativo
+        if shap_val >= 0:
+            continue
+
+        # umbral mínimo
+        if abs(shap_val) < epsilon:
+            continue
+
+        # feature relevante para el rol
+        if feature not in ROLE_FEATURE_MAP.get(role, {}):
+            continue
+
+        aspect = ROLE_FEATURE_MAP[role][feature]
+
+        #evitar redundancia
+        if aspect in used_aspects:
+            continue
+
+        selected.append(
+            (
+                feature,
+                single_match_features.iloc[0, i],
+                shap_val,
+                aspect
+            )
         )
-        for i in sorted_idx
-    ]
-    
-    return top_features
+        used_aspects.add(aspect)
+        
+        if len(selected) == max_features:
+            break
+    print(selected)
+    return selected
