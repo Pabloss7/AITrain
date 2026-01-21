@@ -65,14 +65,11 @@ def explain_match(single_match_features, role, max_features=3, epsilon=0.01):
     used_aspects = set()
 
     sorted_idx = np.argsort(np.abs(shap_values))[::-1]
-    print("shap values:", sorted_idx)
-    print("columns: ", feature_columns)
+
     for i in sorted_idx:
         
         shap_val = shap_values[i]
-        print("Shap value:", shap_val)
         feature = feature_columns[i]
-        print("Feat column value:", feature)
         #solo impacto negativo
         if shap_val >= 0:
             continue
