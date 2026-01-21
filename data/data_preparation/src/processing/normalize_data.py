@@ -75,10 +75,41 @@ df[bool_columns] = df[bool_columns].astype(int)
 
 # Only scale continuous numerical features
 scalable_features = [
-    "goldPerMinute",
-    "dmgMin",
-    "visionScorePerMinute",
+  # Combat
+    "kills","deaths","assists",
+    "doubleKills","tripleKills","quadraKills","pentaKills",
+    "largestKillingSpree","largestMultiKill",
+
+    # Damage
+    "physicalDamageDealtToChampions",
+    "magicDamageDealtToChampions",
+    "trueDamageDealtToChampions",
+    "damageDealtToObjectives",
+    "damageDealtToBuildings",
+    "totalDamageTaken",
+    "damageSelfMitigated",
+
+    # Healing & CC
+    "totalHeal","totalHealsOnTeammates",
+    "totalTimeCCDealt","timeCCingOthers",
+
+    # Economy & farm
+    "goldSpent","goldPerMinute",
+    "neutralMinionsKilled",
+    "totalAllyJungleMinionsKilled",
+    "totalEnemyJungleMinionsKilled",
     "csPerMinute",
+
+    # Vision
+    "visionScorePerMinute",
+
+    # Objectives
+    "turretKills","inhibitorKills",
+    "dragonKills","baronKills",
+    "objectivesStolen","objectivesStolenAssists",
+
+    # Game length
+    "minutesDuration","dmgMin"
 ]
 
 scaler = StandardScaler()

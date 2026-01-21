@@ -1,30 +1,31 @@
-def generate_recommendation(feature, value, shap_val):
-    if feature == "deaths":
-        if shap_val < 0:
-            return "Has muerto demasiado. Intenta jugar más seguro para mejorar tu impacto."
-    
-    if feature == "kills":
-        if shap_val < 0:
-            return "Has conseguido pocas kills. Busca mejores oportunidades de tradeo y presión."
-        else:
-            return "Buen número de kills. Tu agresividad ha sido beneficiosa."
+from src.models.game_aspects import ASPECTS
 
-    if feature == "assists":
-        if shap_val < 0:
-            return "Participa más en las peleas para aumentar tu número de asistencias."
-        else:
-            return "Gran participación en peleas. Sigue así."
+def build_prompt_with_messages(role, top_features):
+    if not top_features:
+        return f" Player({role}): No negative aspects detected for this game."
 
-    if feature == "goldMin":
-        if shap_val < 0:
-            return "Tu oro por minuto es bajo. Intenta mejorar tu farmeo o eficiencia en mapa."
-        else:
-            return "Excelente oro por minuto. Está siendo clave en tus victorias."
+    aspects_seen = set()
+    aspect_list = []
 
-    if feature == "visionMin":
-        if shap_val < 0:
-            return "Tu score de visión es bajo. Mejora tu control de wards."
-        else:
-            return "Buen control de visión. Sigue manteniendo la presión."
+    for feature, value, shap_value, aspect in top_features:
+        if aspect not in aspects_seen:
+            aspects_seen.add(aspect)
+            message = ASPECTS.get(aspect, f"There's no predefined message for aspect: {aspect}.")
+            aspect_list.append(
+                f"- {aspect.replace('_', ' ').capitalize()} ({feature}): {message} "
+                f"(value: {value}, SHAP impact: {shap_value:.3f})"
+            )
 
-    return None
+    # Construir prompt final
+    prompt = f"""
+    Player analyzed:
+    - Role: {role}
+
+    In-game aspects with negative impact detected:
+    {chr(10).join(aspect_list)}
+
+    Instructions:
+    Generate additional recommendations with a higher explainable level and detail of the player's performance.
+    Focus on practical and clear gameplay advice for the player.
+    """
+    return prompt.strip()

@@ -10,14 +10,14 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 
 from src.shap_explainer import explain_match
-from src.recommendations import generate_recommendation
+from src.recommendations import build_prompt_with_messages
 from src.preprocessing import preprocess_player_match
 from src.models.requestModels import MatchProcessRequest
 from src.processing.extract_metrics import extract_metrics, extract_metrics_player
 from src.processing.clean_data import clean_dataset
 from src.processing.normalize_data import normalize_data
 from src.db.mongo_client import insert_mongo_response, get_mongo_recommendation
-
+from src.utils.data_conversor import to_python_type
 
 app = FastAPI(
     title="Match AI recommendation system",
@@ -56,7 +56,7 @@ async def notify_core(job_id: str):
 @app.post("/analyze-match", status_code=201)
 async def analyze_match(match: MatchProcessRequest):
     try:
-        metrics = extract_metrics_player(match.info,match.metadata, match.puuid)
+        metrics, role = extract_metrics_player(match.info,match.metadata, match.puuid)
 
         df = clean_dataset(metrics)
         df = normalize_data(df)
@@ -65,23 +65,29 @@ async def analyze_match(match: MatchProcessRequest):
         df_processed = preprocess_player_match(df, columns)
         
         print("Data processed")
-        df_processed = df_processed.astype(np.float64)
-        top_features = explain_match(df_processed)
+        #df_processed = df_processed.astype(np.float64)
+        top_features = explain_match(df_processed,role)
         print("Explainer processed")
+        #TODO: fix how we handle recommendations in order to create the prompt for gemma 3
+        recommendations = top_features
+        prompt = build_prompt_with_messages(role,top_features)
         
-        recommendations = []
-        for feature, value, shap_value in top_features:
-            rec = generate_recommendation(feature, value, shap_value)
-            if rec:
-                recommendations.append({
-                    "feature": feature,
-                    "value": value,
-                    "shap_value": shap_value,
-                    "recommendation": rec
-                })
+        #     rec = generate_recommendation(feature, value, shap_value)
+        #     if rec:
+        #         recommendations.append({
+        #             "feature": feature,
+        #             "value": to_python_type(value),
+        #             "shap_value": to_python_type(shap_value),
+        #             "recommendation": rec
+        #         })
+        #TODO: CALL GEMMA 3 ms 
+
+
         # NOTE: It's important to save in db before notifying core, so we avoid race conditions
         # Persist first → avoid race condition
-        insert_mongo_response(match.jobId, recommendations)
+
+        #TODO: modify db(?)
+        insert_mongo_response(match.jobId, prompt)
         await notify_core(match.jobId)
         return {"message": "Match processed"}
     except Exception as e:

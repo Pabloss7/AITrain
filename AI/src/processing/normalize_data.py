@@ -73,30 +73,60 @@ def normalize_data(df):
     # ----------------------------
     # NUMERICAL SCALING
     # ----------------------------
-
+    print("El df:", df.columns)
 
     # Now we apply normalization so the ML algorithm can learn better and faster
     path = os.path.join(base_path(),"models", "standard_scaler.joblib")
     scaler = joblib.load(path)
-    print("Values before scaling:\n",df["dmgMin"],df["goldPerMinute"],df["visionScorePerMinute"],df["csPerMinute"])
+
     # Only scale continuous numerical features
     scalable_features = [
-        "goldPerMinute",
-        "dmgMin",
-        "visionScorePerMinute",
-        "csPerMinute",
-    ]
-    df[scalable_features] = scaler.transform(df[scalable_features])
+        # Combat
+        "kills","deaths","assists",
+        "doubleKills","tripleKills","quadraKills","pentaKills",
+        "largestKillingSpree","largestMultiKill",
 
-    print("Values after scaling:\n",df["dmgMin"],df["goldPerMinute"],df["visionScorePerMinute"],df["csPerMinute"])
-    print("Means:", scaler.mean_)
-    print("Stds:", scaler.scale_)
+        # Damage
+        "physicalDamageDealtToChampions",
+        "magicDamageDealtToChampions",
+        "trueDamageDealtToChampions",
+        "damageDealtToObjectives",
+        "damageDealtToBuildings",
+        "totalDamageTaken",
+        "damageSelfMitigated",
+
+        # Healing & CC
+        "totalHeal","totalHealsOnTeammates",
+        "totalTimeCCDealt","timeCCingOthers",
+
+        # Economy & farm
+        "goldSpent","goldPerMinute",
+        "neutralMinionsKilled",
+        "totalAllyJungleMinionsKilled",
+        "totalEnemyJungleMinionsKilled",
+        "csPerMinute",
+
+        # Vision
+        "visionScorePerMinute",
+
+        # Objectives
+        "turretKills","inhibitorKills",
+        "dragonKills","baronKills",
+        "objectivesStolen","objectivesStolenAssists",
+
+        # Game length
+        "minutesDuration","dmgMin"
+    ]
+    df
+    for col in scalable_features:
+        if col not in df.columns:
+            df[col] = 0
+
+    df[scalable_features] = scaler.transform(df[scalable_features])
 
     # ----------------------------
     # FINAL DATASET
     # ----------------------------
-    print("Normalized data:\n",df.head(1))
-    print(df.dtypes)
     df = df.reset_index(drop=True)
 
     return df
