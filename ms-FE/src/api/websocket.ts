@@ -1,4 +1,4 @@
-import { WSMessage } from "../types/websocket";
+import type { WSMessage } from "../types/websocket";
 
 class WebSocketService {
   private socket: WebSocket | null = null;
