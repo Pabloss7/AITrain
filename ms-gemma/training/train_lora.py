@@ -15,12 +15,11 @@ from dotenv import load_dotenv
 load_dotenv("../../.env")
 
 # Configuration
-MODEL_NAME = "google/gemma-2-2b-it"  # Using Gemma 2 (text-only) instead of Gemma 3 (multimodal)
+MODEL_NAME = "google/gemma-2-2b-it"  
 OUTPUT_DIR = "../models/gemma_lora_output"
 DATASET_FILE = "./data/train.jsonl"
 
 def load_jsonl_dataset(file_path):
-    """Carga dataset desde archivo JSONL"""
     data = []
     with open(file_path, "r", encoding="utf-8") as f:
         for line in f:
@@ -28,12 +27,8 @@ def load_jsonl_dataset(file_path):
     return Dataset.from_list(data)
 
 def formatting_prompts_func(example):
-    """
-    Formatea un ejemplo individual al formato de chat de Gemma.
-    SFTTrainer llama a esta función con batched=False, así que recibe un dict con valores únicos.
-    """
     text = f"<start_of_turn>user\n{example['input']}<end_of_turn>\n<start_of_turn>model\n{example['output']}<end_of_turn>"
-    return {"text": text}
+    return text
 
 def train():
     print(f"Loading dataset from {DATASET_FILE}...")
