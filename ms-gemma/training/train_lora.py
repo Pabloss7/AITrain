@@ -27,16 +27,13 @@ def load_jsonl_dataset(file_path):
             data.append(json.loads(line))
     return Dataset.from_list(data)
 
-def formatting_prompts_func(examples):
+def formatting_prompts_func(example):
     """
-    Formatea los ejemplos al formato de chat de Gemma.
-    Esta función debe devolver una lista de strings.
+    Formatea un ejemplo individual al formato de chat de Gemma.
+    SFTTrainer llama a esta función con batched=False, así que recibe un dict con valores únicos.
     """
-    texts = []
-    for i in range(len(examples["input"])):
-        text = f"<start_of_turn>user\n{examples['input'][i]}<end_of_turn>\n<start_of_turn>model\n{examples['output'][i]}<end_of_turn>"
-        texts.append(text)
-    return texts
+    text = f"<start_of_turn>user\n{example['input']}<end_of_turn>\n<start_of_turn>model\n{example['output']}<end_of_turn>"
+    return {"text": text}
 
 def train():
     print(f"Loading dataset from {DATASET_FILE}...")
