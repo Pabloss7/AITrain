@@ -7,3 +7,4 @@ bitsandbytes
 accelerate
 scipy
 python-dotenv
+pillow

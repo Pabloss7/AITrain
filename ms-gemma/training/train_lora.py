@@ -9,13 +9,13 @@ from transformers import (
     TrainingArguments,
 )
 from peft import LoraConfig
-from trl import SFTTrainer
+from trl import SFTTrainer, SFTConfig
 from dotenv import load_dotenv
 
 load_dotenv("../../.env")
 
 # Configuration
-MODEL_NAME = "google/gemma-3-1b-it"
+MODEL_NAME = "google/gemma-2-2b-it"  # Using Gemma 2 (text-only) instead of Gemma 3 (multimodal)
 OUTPUT_DIR = "../models/gemma_lora_output"
 DATASET_FILE = "./data/train.jsonl"
 
@@ -55,17 +55,26 @@ def train():
     # Token de Hugging Face
     token = os.getenv("HF_TOKEN")
     
+    # Disable image processor warnings for text-only training
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
+    
     # Cargar tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, token=token)
+    tokenizer = AutoTokenizer.from_pretrained(
+        MODEL_NAME, 
+        token=token,
+        trust_remote_code=True
+    )
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
 
-    # Cargar modelo
+    # Cargar modelo (text-only, skip vision components)
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_NAME,
         quantization_config=bnb_config,
         device_map="auto",
         token=token,
+        trust_remote_code=True,
+        attn_implementation="eager",  # Avoid flash attention issues
     )
     
     # Desactivar cache para entrenamiento
@@ -81,28 +90,28 @@ def train():
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
     )
 
-    # Argumentos de entrenamiento
-    training_args = TrainingArguments(
+    # Configuración de SFT
+    sft_config = SFTConfig(
         output_dir=OUTPUT_DIR,
         num_train_epochs=3,
         per_device_train_batch_size=2,
         gradient_accumulation_steps=4,
         learning_rate=2e-4,
-        fp16=True,
         logging_steps=10,
+        fp16=True,
         optim="paged_adamw_32bit",
         save_strategy="epoch",
         warmup_steps=10,
+        packing=False,
     )
 
     # Crear trainer
     trainer = SFTTrainer(
         model=model,
-        args=training_args,
+        args=sft_config,
         train_dataset=dataset,
         peft_config=peft_config,
         formatting_func=formatting_prompts_func,
-        max_seq_length=1024,
     )
 
     print("Starting training...")
