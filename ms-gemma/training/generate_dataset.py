@@ -1,7 +1,6 @@
 import json
 import random
 
-# Initial definitions based on AI/src/models/game_aspects.py
 ASPECTS_DATA = {
     "combat_efficiency": {
         "name": "Combat Efficiency",
@@ -117,7 +116,7 @@ ASPECTS_DATA = {
     }
 }
 
-# Mapping based on AI/src/models/role_feature_map.py
+
 # This maps Roles to the KEYS in ASPECTS_DATA
 ROLE_ASPECTS = {
     "JUNGLE": ["objective_pressure", "vision_control", "utility_control", "combat_efficiency", "survivability", "lane_scaling"],
@@ -127,8 +126,7 @@ ROLE_ASPECTS = {
     "TOP": ["frontline_value", "survivability", "lane_scaling", "combat_efficiency", "objective_pressure"]
 }
 
-# The user's role names might be slightly different in the prompt ("SUPPORT" vs "UTILITY")
-# Let's standardize to the 5 roles used in LoL
+
 ROLE_MAP_NORMALIZED = {
     "TOP": "TOP",
     "JUNGLE": "JUNGLE",
@@ -157,16 +155,13 @@ In-game aspects with negative impact detected:
 """
 
 def generate_example():
-    # Pick a random role
     role_display = random.choice(["TOP", "JUNGLE", "MID", "ADC", "SUPPORT"])
     role_key = ROLE_MAP_NORMALIZED[role_display]
     
-    # Get relevant aspects for this role
     possible_aspects = ROLE_ASPECTS.get(role_key, list(ASPECTS_DATA.keys()))
     
-    # Select 1 to 3 aspects detected as negative
     num_aspects = random.randint(1, 3)
-    # Ensure we don't pick more than available
+
     num_aspects = min(num_aspects, len(possible_aspects))
     selected_keys = random.sample(possible_aspects, num_aspects)
     
@@ -177,33 +172,24 @@ def generate_example():
     for key in selected_keys:
         aspect = ASPECTS_DATA[key]
         
-        # Randomize values
-        value = round(random.uniform(-0.5, 0.5), 2) # Normalized values usually
+       
+        value = round(random.uniform(-0.5, 0.5), 2) 
         shap = round(random.uniform(-1.5, -0.1), 3) # Negative SHAP implies negative impact
         
         # Build the prompt line
-        # Format: - Name (desc): Description (value: X, SHAP impact: Y)
-        # Note: The prompt example used "Frontline value (totalDamageTaken)"
-        # But our keys are abstract aspects. We should probably simulate the feature name too?
-        # For simplicity, we stick to the Aspect Name provided in ASPECTS_DATA
         line = f"- {aspect['name']}: {aspect['desc']} (value: {value}, SHAP impact: {shap})"
         aspects_text_lines.append(line)
         
-        # Pick explanation and advice
         explanations.append(random.choice(aspect["explanation"]))
         advices.append(random.choice(aspect["advice"]))
         
     aspects_block = "\n".join(aspects_text_lines)
     
-    # Construct the Input Prompt
     input_text = PROMPT_TEMPLATE.format(role=role_display, aspects=aspects_block)
     
-    # Construct the Output Response
-    # Merge explanations
     advice_body = " ".join(advices)
     explanation_body = f"As a {role_display}, " + " Also, ".join(explanations) + "."
     
-    # Add some variation to the output structure
     output_text = f"{explanation_body}\n\nTo improve your gameplay: {advice_body}"
     
     return {
