@@ -14,7 +14,7 @@ from trl import SFTTrainer
 # Configuration
 MODEL_NAME = "google/gemma-3-2b-it" 
 OUTPUT_DIR = "./gemma_lora_output"
-DATASET_FILE = "train.jsonl"
+DATASET_FILE = "./data/train.jsonl"
 MAX_SEQ_LENGTH = 1024
 
 def load_dataset(file_path):
