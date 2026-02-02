@@ -10,11 +10,14 @@ from transformers import (
 )
 from peft import LoraConfig, get_peft_model, TaskType
 from trl import SFTTrainer
+from dotenv import load_dotenv
+
+load_dotenv("../../.env")
 
 # Configuration
-MODEL_NAME = "google/gemma-3-2b-it" 
-OUTPUT_DIR = "./gemma_lora_output"
-DATASET_FILE = "train.jsonl"
+MODEL_NAME = "google/gemma-3-1b-it" 
+OUTPUT_DIR = "../models/gemma_lora_output"
+DATASET_FILE = "./data/train.jsonl"
 MAX_SEQ_LENGTH = 1024
 
 def load_dataset(file_path):
@@ -43,14 +46,20 @@ def train():
         bnb_4bit_compute_dtype=torch.float16,
     )
 
+    # Get token from environment
+    token = os.getenv("HF_TOKEN")
+    if not token:
+        print("Warning: HF_TOKEN not found in environment variables. Model download may fail if gated.")
+
     try:
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, token=token)
         tokenizer.padding_side = "right" # Fix for fp16
 
         model = AutoModelForCausalLM.from_pretrained(
             MODEL_NAME,
             quantization_config=bnb_config,
-            device_map="auto"
+            device_map="auto",
+            token=token
         )
     except Exception as e:
         print(f"Error loading {MODEL_NAME}: {e}")
