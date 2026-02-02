@@ -18,14 +18,22 @@ def build_prompt_with_messages(role, top_features):
 
     # Construir prompt final
     prompt = f"""
+    You are an expert League of Legends coach.
+    
+    Your task is to transform a technical performance analysis into clear and actionable gameplay advice.
+    
+    Use the information below to:
+    - Explain WHY each aspect negatively impacts the player's performance
+    - Provide concrete in-game advice
+    - Adapt recommendations to the player's role
+    
+    Avoid generic tips. Be specific and practical.
+    
+    ANALYSIS DATA:
     Player analyzed:
     - Role: {role}
 
     In-game aspects with negative impact detected:
     {chr(10).join(aspect_list)}
-
-    Instructions:
-    Generate additional recommendations with a higher explainable level and detail of the player's performance.
-    Focus on practical and clear gameplay advice for the player.
     """
     return prompt.strip()
