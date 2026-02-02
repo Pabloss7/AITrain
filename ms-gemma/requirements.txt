@@ -6,3 +6,4 @@ trl
 bitsandbytes
 accelerate
 scipy
+python-dotenv
