@@ -27,7 +27,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
       - postgres-core
-  
+
   ms-ai:
     build: ./ai
     ports:
@@ -41,7 +41,7 @@ services:
       - MONGO_URI=mongodb://mongo:27017
       - MONGO_DB=match_data
       - MONGO_RECOMS_COLLECTION=recommendations
-  
+
   mongo:
     image: mongo:6
     container_name: mongo
@@ -50,18 +50,33 @@ services:
     volumes:
       - mongo_data:/data/db
   postgres-core:
-      image: postgres:16
-      container_name: postgres-ms-core
-      restart: unless-stopped
-      environment:
-        POSTGRES_DB: ms_core
-        POSTGRES_USER: core_user
-        POSTGRES_PASSWORD: core_password
-      ports:
-        - "5433:5432"
-      volumes:
-        - postgres_core_data:/var/lib/postgresql/data
-  
+    image: postgres:16
+    container_name: postgres-ms-core
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ms_core
+      POSTGRES_USER: core_user
+      POSTGRES_PASSWORD: core_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_core_data:/var/lib/postgresql/data
+
+  ms-gemma:
+    build: ./ms-gemma
+    container_name: ms-gemma
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ms-gemma/gemma_lora_output:/app/gemma_lora_output
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
   ms-fe:
     build: ./ms-FE
     container_name: ms-fe
