@@ -2,6 +2,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 import os
+import re
 
 class GemmaGenerator:
     def __init__(self):
@@ -58,11 +59,25 @@ class GemmaGenerator:
             generated_tokens = outputs[0][input_length:]
             decoded_response = self.tokenizer.decode(generated_tokens, skip_special_tokens=True).strip()
             
-            # Clean up potential turn identifiers like 'model' at the start
-            if decoded_response.lower().startswith("model"):
-                decoded_response = decoded_response[5:].strip()
+            print(f"Original decoded response: '{decoded_response[:100]}...'")
+
+            # 1. Strip the "model" tag if it appears anywhere as a speaker delimiter
+            if "model" in decoded_response.lower():
+                # Split by 'model' (case insensitive) and take the last part
+                parts = re.split(r'(?i)model', decoded_response)
+                decoded_response = parts[-1].strip()
+
+            # 2. Strip "Recommendations:" if it's lingering at the start
+            if decoded_response.lower().startswith("recommendations:"):
+                # If there's a lot of text after it, it might still have the summary.
+                # Usually we want the part that starts with "As a [ROLE]"
+                match = re.search(r'(?i)As a\s+(TOP|JUNGLE|MID|ADC|SUPPORT|JGL)', decoded_response)
+                if match:
+                    decoded_response = decoded_response[match.start():].strip()
+                else:
+                    decoded_response = decoded_response[len("recommendations:"):].strip()
             
-            print(f"Decoded response: '{decoded_response}'")
+            print(f"Cleaned decoded response: '{decoded_response[:100]}...'")
             print(f"--- GENERATION END ---")
             
             return decoded_response
