@@ -61,22 +61,20 @@ services:
       - "5433:5432"
     volumes:
       - postgres_core_data:/var/lib/postgresql/data
-
-  ms-gemma:
-    build: ./ms-gemma
-    container_name: ms-gemma
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./ms-gemma/gemma_lora_output:/app/gemma_lora_output
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [ gpu ]
-
+  # ms-gemma:
+  #   build: ./ms-gemma
+  #   container_name: ms-gemma
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./ms-gemma/gemma_lora_output:/app/gemma_lora_output
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [ gpu ]
   ms-fe:
     build: ./ms-FE
     container_name: ms-fe
