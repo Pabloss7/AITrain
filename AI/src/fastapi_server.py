@@ -64,8 +64,6 @@ async def analyze_match(match: MatchProcessRequest):
         columns = os.getenv("COLUMNS").split(",")
         df_processed = preprocess_player_match(df, columns)
         
-        print("Data processed")
-        #df_processed = df_processed.astype(np.float64)
         top_features = explain_match(df_processed,role)
         print("Explainer processed")
         #TODO: fix how we handle recommendations in order to create the prompt for gemma 3
