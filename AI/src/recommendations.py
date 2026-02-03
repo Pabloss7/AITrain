@@ -16,24 +16,25 @@ def build_prompt_with_messages(role, top_features):
                 f"(value: {value}, SHAP impact: {shap_value:.3f})"
             )
 
-    # Construir prompt final
-    prompt = f"""
-    You are an expert League of Legends coach.
-    
-    Your task is to transform a technical performance analysis into clear and actionable gameplay advice.
-    
-    Use the information below to:
-    - Explain WHY each aspect negatively impacts the player's performance
-    - Provide concrete in-game advice
-    - Adapt recommendations to the player's role
-    
-    Avoid generic tips. Be specific and practical.
-    
-    ANALYSIS DATA:
-    Player analyzed:
-    - Role: {role}
+    # Construir prompt final en formato Instruct para Gemma
+    prompt = f"""<start_of_turn>user
+You are an expert League of Legends coach.
 
-    In-game aspects with negative impact detected:
-    {chr(10).join(aspect_list)}
-    """
-    return prompt.strip()
+Your task is to transform a technical performance analysis into clear and actionable gameplay advice.
+
+Use the information below to:
+- Explain WHY each aspect negatively impacts the player's performance
+- Provide concrete in-game advice
+- Adapt recommendations to the player's role
+
+Avoid generic tips. Be specific and practical.
+
+ANALYSIS DATA:
+Player analyzed:
+- Role: {role}
+
+In-game aspects with negative impact detected:
+{chr(10).join(aspect_list)}<end_of_turn>
+<start_of_turn>model
+"""
+    return prompt.strip(), list(aspects_seen)[0]

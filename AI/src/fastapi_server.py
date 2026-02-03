@@ -46,11 +46,28 @@ async def notify_core(job_id: str):
     url= f"{core_url}/{job_id}/completed"
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.patch(url)
+            response = await client.patch(url, timeout=10.0)
             response.raise_for_status()
             print("Core communication:", response.status_code)
         except httpx.HTTPError as e:
-            print("Error with Core microservice:", e)
+            print(f"Error logic with Core microservice at {url}: {e}")
+
+async def generate_recommendations(prompt: str):
+    gemma_url = os.getenv("GEMMA_URL")
+    url= f"{gemma_url}/generate"
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        try:
+            print(f"Sending request to Gemma at {url}...")
+            response = await client.post(url, json={"input": prompt})
+            response.raise_for_status()
+            print("Gemma communication success:", response.status_code)
+            return response.json()
+        except httpx.HTTPError as e:
+            print(f"Error with Gemma microservice at {url}: {e}")
+            if hasattr(e, 'response') and e.response:
+                print(f"Response status: {e.response.status_code}")
+                print(f"Response body: {e.response.text}")
+            return None
 
 ### EDNPOINTS
 @app.post("/analyze-match", status_code=201)
@@ -66,26 +83,16 @@ async def analyze_match(match: MatchProcessRequest):
         
         top_features = explain_match(df_processed,role)
         print("Explainer processed")
-        #TODO: fix how we handle recommendations in order to create the prompt for gemma 3
-        recommendations = top_features
-        prompt = build_prompt_with_messages(role,top_features)
-        
-        #     rec = generate_recommendation(feature, value, shap_value)
-        #     if rec:
-        #         recommendations.append({
-        #             "feature": feature,
-        #             "value": to_python_type(value),
-        #             "shap_value": to_python_type(shap_value),
-        #             "recommendation": rec
-        #         })
-        #TODO: CALL GEMMA 3 ms 
 
+        prompt, aspect = build_prompt_with_messages(role,top_features)
+
+        recommendations = await generate_recommendations(prompt)
+        print("Recommendations generated:\n", recommendations)
 
         # NOTE: It's important to save in db before notifying core, so we avoid race conditions
         # Persist first → avoid race condition
 
-        #TODO: modify db(?)
-        insert_mongo_response(match.jobId, prompt)
+        insert_mongo_response(match.jobId, recommendations, aspect, role)
         await notify_core(match.jobId)
         return {"message": "Match processed"}
     except Exception as e:

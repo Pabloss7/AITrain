@@ -31,7 +31,7 @@ class GemmaGenerator:
         self.model.eval()
         print("Model and adapter loaded successfully!")
 
-    def generate_response(self, text_input, max_new_tokens=256):
+    def generate_response(self, text_input, max_new_tokens=512):
         try:
             print(f"--- GENERATION START ---")
             print(f"Input text length: {len(text_input)}")
@@ -50,27 +50,19 @@ class GemmaGenerator:
                     pad_token_id=self.tokenizer.pad_token_id if self.tokenizer.pad_token_id else self.tokenizer.eos_token_id
                 )
             
-            # Decode the full output for debugging
-            full_decoded = self.tokenizer.decode(outputs[0], skip_special_tokens=False)
-            print(f"Full decoded output length: {len(full_decoded)}")
-            print(f"Full decoded output (first 200 chars): {full_decoded[:200]}...")
-            
-            # Decode only the generated part
+            # Decode only the generated part to avoid stripping valid prompt content accidentally
             generated_tokens = outputs[0][input_length:]
             decoded_response = self.tokenizer.decode(generated_tokens, skip_special_tokens=True).strip()
             
             print(f"Original decoded response: '{decoded_response[:100]}...'")
 
-            # 1. Strip the "model" tag if it appears anywhere as a speaker delimiter
-            if "model" in decoded_response.lower():
-                # Split by 'model' (case insensitive) and take the last part
-                parts = re.split(r'(?i)model', decoded_response)
+            tags_to_strip = [r'<start_of_turn>model', r'<start_of_turn>', r'model']
+            for tag in tags_to_strip:
+                parts = re.split(tag, decoded_response, flags=re.IGNORECASE)
                 decoded_response = parts[-1].strip()
 
             # 2. Strip "Recommendations:" if it's lingering at the start
             if decoded_response.lower().startswith("recommendations:"):
-                # If there's a lot of text after it, it might still have the summary.
-                # Usually we want the part that starts with "As a [ROLE]"
                 match = re.search(r'(?i)As a\s+(TOP|JUNGLE|MID|ADC|SUPPORT|JGL)', decoded_response)
                 if match:
                     decoded_response = decoded_response[match.start():].strip()
