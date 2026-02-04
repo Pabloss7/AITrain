@@ -13,6 +13,7 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY src/ /app/src/
 
+#NOTE: I should be using users in order to avoid fisures in the system
 # Set environment variables
 ENV PYTHONPATH=/app/src
 ENV PYTHONUNBUFFERED=1
