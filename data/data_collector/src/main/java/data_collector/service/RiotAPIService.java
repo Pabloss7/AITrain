@@ -27,11 +27,21 @@ public class RiotAPIService {
     private final WebClient webClient = WebClient.builder().build();
 
     public MatchAISenderDTO getSingleMatch(String summonerName, String tagLine, String jobId){
-           String summonerJSON = getAccount(summonerName,tagLine);
-           JsonObject obj = JsonParser.parseString(summonerJSON).getAsJsonObject();
-           String playerPUUID = obj.get("puuid").getAsString();
+        try {
+            String summonerJSON = getAccount(summonerName,tagLine);
+            System.out.println("Riot API Response: " + summonerJSON);
+            
+            JsonObject obj = JsonParser.parseString(summonerJSON).getAsJsonObject();
+            String playerPUUID = obj.get("puuid").getAsString();
 
-          return getMatch(playerPUUID, jobId);
+            return getMatch(playerPUUID, jobId);
+        } catch (Exception e) {
+            System.err.println("Error parsing Riot API response: " + e.getMessage());
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Failed to fetch summoner data. API key might be expired or invalid: " + e.getMessage()
+            );
+        }
     }
 
     private MatchAISenderDTO getMatch(String playerPUUID, String jobId){
@@ -101,15 +111,20 @@ public class RiotAPIService {
     private String getAccount(String summonerName, String tagLine){
         try{
             String url = accountURI+summonerName+ "/"+ tagLine;
-            return webClient.get()
+            String response = webClient.get()
                     .uri(url)
                     .header("X-Riot-Token", apiKey)
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
-
+            
+            return response;
         }catch(Exception e){
-            return HttpStatus.INTERNAL_SERVER_ERROR.toString();
+            System.err.println("Error fetching account from Riot API: " + e.getMessage());
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Failed to fetch account from Riot API. Check your API key and summoner name: " + e.getMessage()
+            );
         }
     }
     private MatchAISenderDTO buildMatchDTO(String jobId, String puuid, JsonObject matchJSON, String matchId){

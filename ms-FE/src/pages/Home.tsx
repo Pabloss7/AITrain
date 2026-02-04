@@ -2,18 +2,6 @@ import { useState } from 'react';
 import { useRecommendationSocket } from "../hooks/useRecommendationSocket";
 
 // Icons
-const CopyIcon = () => (
-  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ marginRight: '4px' }}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ marginRight: '4px' }}>
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-  </svg>
-);
-
 const InfoIcon = () => (
   <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -27,7 +15,6 @@ interface HomeProps {
 export default function Home({ onNavigate }: HomeProps) {
   const [summonerName, setSummonerName] = useState('');
   const [tagLine, setTagLine] = useState('');
-  const [copied, setCopied] = useState(false);
 
   const { status, recommendation, connectAndRequest, disconnect } = useRecommendationSocket();
 
@@ -40,14 +27,6 @@ export default function Home({ onNavigate }: HomeProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && summonerName && tagLine) {
       handleAnalyze();
-    }
-  };
-
-  const handleCopy = () => {
-    if (recommendation) {
-      navigator.clipboard.writeText(JSON.stringify(recommendation, null, 2));
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -145,23 +124,60 @@ export default function Home({ onNavigate }: HomeProps) {
             {recommendation && (
               <div style={{ marginTop: "20px", position: "relative" }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <h4 style={{ color: 'var(--accent-cyan)', margin: 0 }}>Recommendation Result</h4>
-                  <button onClick={handleCopy} className="copy-btn">
-                    {copied ? (
-                      <span style={{ display: 'flex', alignItems: 'center', color: '#4ade80' }}>
-                        <CheckIcon /> Copied
-                      </span>
-                    ) : (
-                      <span style={{ display: 'flex', alignItems: 'center' }}>
-                        <CopyIcon /> Copy JSON
-                      </span>
-                    )}
-                  </button>
+                  <h4 style={{ color: 'var(--accent-cyan)', margin: 0 }}>Coach Advice</h4>
                 </div>
 
-                <pre className="code-block" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  {JSON.stringify(recommendation, null, 2)}
-                </pre>
+                <div className="advice-content" style={{
+                  color: 'var(--text-light)',
+                  lineHeight: '1.6',
+                  fontSize: '1.1rem',
+                  whiteSpace: 'pre-wrap',
+                  padding: '1rem',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  marginBottom: '1.5rem'
+                }}>
+                  {typeof recommendation === 'string' ? recommendation : (recommendation?.recommendation ?? JSON.stringify(recommendation))}
+                </div>
+
+                {/* YouTube Guide Section */}
+                <div style={{
+                  marginTop: '1.5rem',
+                  padding: '1.5rem',
+                  background: 'rgba(255, 0, 0, 0.05)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 0, 0, 0.1)'
+                }}>
+                  <h4 style={{ color: '#ff0000', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '8px' }}>
+                      <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+                    </svg>
+                    Video Guide Recommendation
+                  </h4>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                    Based on your primary area for improvement, we've found some helpful resources:
+                  </p>
+                  <a
+                    href={`https://www.youtube.com/results?search_query=how+to+improve+${encodeURIComponent(recommendation.primary_aspect || 'gameplay')}+as+${encodeURIComponent(recommendation.role || 'player')}+in+league+of+legends`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="secondary"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      textDecoration: 'none',
+                      background: '#ff0000',
+                      color: 'white',
+                      padding: '10px 20px',
+                      borderRadius: '8px',
+                      fontWeight: 'bold',
+                      fontSize: '0.9rem'
+                    }}
+                  >
+                    Watch Guide on YouTube
+                  </a>
+                </div>
               </div>
             )}
           </div>

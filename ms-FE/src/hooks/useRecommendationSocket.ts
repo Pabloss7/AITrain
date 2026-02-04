@@ -10,14 +10,46 @@ export function useRecommendationSocket() {
     const connectAndRequest = useCallback((summonerName: string, tagLine: string) => {
         setStatus('connecting');
 
-        // Connect to the WebSocket
-        // Backend is mapped to 8181 in compose.yaml
         wsService.connect('ws://localhost:8181/ws', (message: WSMessage) => {
             if (message.type === 'job_created') {
                 setJobId(message.payload.jobId);
                 setStatus('job_created');
             } else if (message.type === 'recommendation') {
-                setRecommendation(message.payload);
+                // Handle the structured payload: { response, role, aspect }
+                let data = null;
+                const payload = message.payload;
+
+                if (payload.response) {
+                    // This is the structure the user specified: { jobId, status, response, aspect, role }
+                    data = {
+                        recommendation: typeof payload.response === 'string' ? payload.response : JSON.stringify(payload.response),
+                        role: payload.role || "unknown",
+                        primary_aspect: payload.aspect || "gameplay"
+                    };
+                } else if (payload.recommendations && payload.recommendations.response) {
+                    // Fallback for older nested format
+                    data = {
+                        recommendation: payload.recommendations.response,
+                        role: payload.role || "unknown",
+                        primary_aspect: "gameplay"
+                    };
+                } else if (payload.recommendation) {
+                    // Fallback for previous structured format
+                    data = {
+                        recommendation: payload.recommendation,
+                        role: payload.role || "unknown",
+                        primary_aspect: payload.primary_aspect || "gameplay"
+                    };
+                } else {
+                    // Ultimate fallback
+                    data = {
+                        recommendation: typeof payload === 'string' ? payload : JSON.stringify(payload),
+                        role: "unknown",
+                        primary_aspect: "gameplay"
+                    };
+                }
+
+                setRecommendation(data);
                 setStatus('completed');
                 wsService.disconnect();
             }

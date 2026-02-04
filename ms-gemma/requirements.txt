@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+transformers
+torch
+accelerate
+bitsandbytes
+peft
+sentencepiece
+protobuf
