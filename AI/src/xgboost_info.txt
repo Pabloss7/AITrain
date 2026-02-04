@@ -1,0 +1,15 @@
+Best parameters found:
+{'colsample_bytree': 1.0, 'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 1000, 'subsample': 0.8}
+Best CV AUC: 0.9730
+Accuracy of the base model: 0.915
+AUC of the base model: 0.973
+
+Classification report:
+               precision    recall  f1-score   support
+
+           0       0.91      0.92      0.92     91466
+           1       0.92      0.91      0.91     91474
+
+    accuracy                           0.91    182940
+   macro avg       0.91      0.91      0.91    182940
+weighted avg       0.91      0.91      0.91    182940
