@@ -2,7 +2,7 @@ from src.models.game_aspects import ASPECTS
 
 def build_prompt_with_messages(role, top_features):
     if not top_features:
-        return f" Player({role}): No negative aspects detected for this game."
+        return f" Player({role}): No negative aspects detected for this game.", "none"
 
     aspects_seen = set()
     aspect_list = []
