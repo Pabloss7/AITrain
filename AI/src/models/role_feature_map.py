@@ -13,18 +13,24 @@ ROLE_FEATURE_MAP = {
         "kills": "combat_efficiency",
         "deaths": "survivability",
 
-        "goldPerMinute": "lane_scaling"
+        "goldPerMinute": "lane_scaling",
+
+        "dmgMin": "damage_output"
     },
 
     "ADC": {
         "kills": "combat_efficiency",
+        "assists": "combat_efficiency",
         "deaths": "survivability",
 
         "csPerMinute": "lane_scaling",
         "goldPerMinute": "lane_scaling",
 
         "damageDealtToObjectives": "objective_pressure",
-        "turretKills": "objective_pressure"
+        "turretKills": "objective_pressure",
+
+        "dmgMin": "damage_output",
+        "damageDealtToBuildings": "map_pressure"
     },
 
     "UTILITY": {
@@ -48,7 +54,10 @@ ROLE_FEATURE_MAP = {
 
         "deaths": "survivability",
 
-        "turretKills": "objective_pressure"
+        "turretKills": "objective_pressure",
+
+        "dmgMin": "damage_output",
+        "damageDealtToBuildings": "map_pressure"
     },
 
     "TOP":{    
@@ -63,6 +72,8 @@ ROLE_FEATURE_MAP = {
         "deaths": "survivability",
 
         "turretKills": "objective_pressure",
-        "inhibitorKills": "objective_pressure"
+        "inhibitorKills": "objective_pressure",
+
+        "dmgMin": "damage_output"
     }
 }
