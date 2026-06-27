@@ -1,20 +1,21 @@
 from src.models.game_aspects import ASPECTS
 
 def build_prompt_with_messages(role, top_features):
-    if not top_features:
-        return f" Player({role}): No negative aspects detected for this game.", "none"
-
     aspects_seen = set()
     aspect_list = []
 
-    for feature, value, shap_value, aspect in top_features:
-        if aspect not in aspects_seen:
-            aspects_seen.add(aspect)
-            message = ASPECTS.get(aspect, f"There's no predefined message for aspect: {aspect}.")
-            aspect_list.append(
-                f"- {aspect.replace('_', ' ').capitalize()} ({feature}): {message} "
-                f"(value: {value}, SHAP impact: {shap_value:.3f})"
-            )
+    if not top_features:
+        aspect_list = ["- No negative performance aspects were detected in this match. The player performed exceptionally well across all tracked metrics."]
+        aspects_seen.add("none")
+    else:
+        for feature, value, shap_value, aspect in top_features:
+            if aspect not in aspects_seen:
+                aspects_seen.add(aspect)
+                message = ASPECTS.get(aspect, f"There's no predefined message for aspect: {aspect}.")
+                aspect_list.append(
+                    f"- {aspect.replace('_', ' ').capitalize()} ({feature}): {message} "
+                    f"(value: {value}, SHAP impact: {shap_value:.3f})"
+                )
 
     # Construir prompt final en formato Instruct para Gemma
     prompt = f"""<start_of_turn>user
