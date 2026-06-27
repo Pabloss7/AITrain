@@ -61,6 +61,28 @@ def explain_match(single_match_features, role, max_features=3, epsilon=0.01):
         check_additivity=False
     )[0]
 
+    # DEBUG: Print all SHAP values for role-relevant features
+    role_features = ROLE_FEATURE_MAP.get(role, {})
+    print(f"\n=== DEBUG SHAP for role={role} ===")
+    print(f"Top 10 features by |SHAP| (any role):")
+    debug_sorted = np.argsort(np.abs(shap_values))[::-1]
+    for rank, idx in enumerate(debug_sorted[:10]):
+        feat = feature_columns[idx]
+        sv = shap_values[idx]
+        in_role = "(MAPPED)" if feat in role_features else ""
+        print(f"  #{rank+1}: {feat} = {sv:.4f} {in_role}")
+    
+    print(f"\nRole-mapped features for {role}:")
+    for feat, aspect in role_features.items():
+        if feat in feature_columns:
+            feat_idx = feature_columns.index(feat)
+            sv = shap_values[feat_idx]
+            val = single_match_features.iloc[0, feat_idx]
+            print(f"  {feat} -> {aspect}: SHAP={sv:.4f}, value={val:.4f}")
+        else:
+            print(f"  {feat} -> {aspect}: NOT IN MODEL COLUMNS")
+    print("=== END DEBUG ===\n")
+
     selected = []
     used_aspects = set()
 

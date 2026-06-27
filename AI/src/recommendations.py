@@ -1,6 +1,17 @@
 from src.models.game_aspects import ASPECTS
 
+# Riot API uses individualPosition values (BOTTOM, MIDDLE) but
+# our Gemma model was fine-tuned with friendly role names (ADC, MID)
+ROLE_DISPLAY_NAME = {
+    "BOTTOM": "ADC",
+    "MIDDLE": "MID",
+    "JUNGLE": "JUNGLE",
+    "TOP": "TOP",
+    "UTILITY": "UTILITY",
+}
+
 def build_prompt_with_messages(role, top_features):
+    display_role = ROLE_DISPLAY_NAME.get(role, role)
     aspects_seen = set()
     aspect_list = []
 
@@ -32,7 +43,7 @@ Avoid generic tips. Be specific and practical.
 
 ANALYSIS DATA:
 Player analyzed:
-- Role: {role}
+- Role: {display_role}
 
 In-game aspects with negative impact detected:
 {chr(10).join(aspect_list)}<end_of_turn>

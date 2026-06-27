@@ -18,7 +18,7 @@ ROLE_FEATURE_MAP = {
         "dmgMin": "damage_output"
     },
 
-    "ADC": {
+    "BOTTOM": {
         "kills": "combat_efficiency",
         "assists": "combat_efficiency",
         "deaths": "survivability",
@@ -45,7 +45,7 @@ ROLE_FEATURE_MAP = {
         "totalDamageTaken": "frontline_value"
     },
 
-    "MID": {
+    "MIDDLE": {
         "kills": "combat_efficiency",
         "assists": "combat_efficiency",
 
